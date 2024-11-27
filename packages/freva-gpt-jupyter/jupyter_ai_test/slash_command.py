@@ -1,8 +1,10 @@
 from jupyter_ai.chat_handlers.base import BaseChatHandler, SlashCommandRoutingType
 from jupyter_ai.models import HumanChatMessage
+from ._client import Client
+import json
 
 
-class TestSlashCommand(BaseChatHandler):
+class PingSlashCommand(BaseChatHandler):
     """
     A test slash command implementation that developers should build from. The
     string used to invoke this command is set by the `slash_id` keyword argument
@@ -15,10 +17,12 @@ class TestSlashCommand(BaseChatHandler):
     update the entry point there as well.
     """
 
-    id = "test"
-    name = "Test"
-    help = "A test slash command."
-    routing_type = SlashCommandRoutingType(slash_id="test")
+    id = "ping"
+    name = "Ping"
+    help = "A command to get the chat backends capabilities"
+    routing_type = SlashCommandRoutingType(slash_id="ping")
+    base_url = "https://freva.dkrz.de/api/chatbot/"
+    client : Client = Client(host=base_url)
 
     uses_llm = False
 
@@ -26,4 +30,4 @@ class TestSlashCommand(BaseChatHandler):
         super().__init__(*args, **kwargs)
 
     async def process_message(self, message: HumanChatMessage):
-        self.reply("This is the `/test` slash command.")
+        self.reply(response=json.dumps(self.client.request(method="GET", url="/ping"), indent=2))

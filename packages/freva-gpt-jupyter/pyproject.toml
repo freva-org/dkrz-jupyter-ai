@@ -31,10 +31,10 @@ dependencies = ["jupyter_ai"]
 test = ["coverage", "pytest", "pytest-asyncio", "pytest-cov"]
 
 [project.entry-points."jupyter_ai.model_providers"]
-test-provider = "jupyter_ai_test.provider:TestProvider"
+test-provider = "jupyter_ai_test.provider:FrevaGPTProvider"
 
 [project.entry-points."jupyter_ai.chat_handlers"]
-test-slash-command = "jupyter_ai_test.slash_command:TestSlashCommand"
+test-slash-command = "jupyter_ai_test.slash_command:PingSlashCommand"
 
 [tool.hatch.build.hooks.version]
 path = "jupyter_ai_test/_version.py"
