@@ -2,10 +2,10 @@ from typing import ClassVar, List
 
 from jupyter_ai import AuthStrategy, BaseProvider, EnvAuthStrategy, Field
 
-from .llm import FrevaLLM
+from .llm import FrevaChat
 
 
-class FrevaGPTProvider(BaseProvider, FrevaLLM):
+class FrevaGPTProvider(BaseProvider, FrevaChat):
     """
     A test model provider implementation for developers to build from. A model
     provider inherits from 2 classes: 1) the `BaseProvider` class from
