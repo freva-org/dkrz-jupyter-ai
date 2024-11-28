@@ -146,6 +146,7 @@ class Client:
                         partial_response = fixed_part
                         return complete_parts, partial_response
                     # If it is complete, add to the list and clear partial response
+                    complete_parts.append(json.loads(fixed_part))
                     return complete_parts, ""
                 
                 else:
