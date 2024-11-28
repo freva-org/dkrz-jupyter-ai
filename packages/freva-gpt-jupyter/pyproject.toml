@@ -34,7 +34,8 @@ test = ["coverage", "pytest", "pytest-asyncio", "pytest-cov"]
 test-provider = "jupyter_ai_test.provider:FrevaGPTProvider"
 
 [project.entry-points."jupyter_ai.chat_handlers"]
-test-slash-command = "jupyter_ai_test.slash_command:PingSlashCommand"
+ping-slash-command = "jupyter_ai_test.slash_command:PingSlashCommand"
+docs-slash-command = "jupyter_ai_test.slash_command:DocsSlashCommand"
 
 [tool.hatch.build.hooks.version]
 path = "jupyter_ai_test/_version.py"
