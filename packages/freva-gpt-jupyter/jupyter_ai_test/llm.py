@@ -1,24 +1,15 @@
 import json
-import os
+import time
+import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Iterator
 
-from PIL import Image
-import base64
-import io
-import time
-
 from langchain_core.pydantic_v1 import (
-    BaseModel,
     Field,
     root_validator,
     SecretStr
 )
-from langchain_core.utils import (
-    convert_to_secret_str,
-    get_from_dict_or_env,
-)
-
+from langchain_core.utils import convert_to_secret_str, get_from_dict_or_env
 from langchain_core.callbacks.manager import CallbackManagerForLLMRun
 from langchain_core.language_models.chat_models import generate_from_stream
 from langchain_core.language_models.llms import LLM
@@ -37,7 +28,9 @@ class FrevaChat(LLM):
     _client: Client = Field(default=None)
     stop: str = Field(default="Generation complete")
     thread_id: str = Field(default=None)
+
     debug: bool = False
+    logger: logging.Logger = logging.getLogger(__name__)
 
     @property
     def _llm_type(self) -> str:
@@ -76,8 +69,23 @@ class FrevaChat(LLM):
         **kwargs: Any,
     ) -> ChatMessage:
         
-        stream = self._stream(prompt, stop, run_manager, **kwargs)
-        chat_result: ChatResult = generate_from_stream(stream)
+        self.logger.info("Called _call")
+        try:
+            stream = self._stream(prompt, stop, run_manager, **kwargs)
+            chat_result: ChatResult = generate_from_stream(stream)
+        except ConnectionError as e:
+            if e.errno == 409:
+                self.logger.warning(
+                        (
+                        f"Encountered 409 Connection Conflict Error: {e.strerror}. ",
+                        "Creating a new thread and trying again..."
+                        )
+                )
+                self.thread_id=None
+                stream = self._stream(prompt, stop, run_manager, **kwargs)
+                chat_result: ChatResult = generate_from_stream(stream)
+            else:
+                raise
         return chat_result.generations[0].text
         
         
@@ -93,10 +101,19 @@ class FrevaChat(LLM):
             stop=self.stop
 
         if self.debug:
-            with open(file=f"{Path(__file__).parent}/example_conversation.json") as fo:
-                stream=json.load(fo)
+            with open(
+                file=f"{Path(__file__).parent}/example_conversation.json") as fo:
+                    stream=json.load(fo)
         else:
-            stream=self._client.request(method="GET", url="/streamresponse", stream=True, params={"input":prompt, "auth_key":self.auth_key.get_secret_value(), "thread_id":self.thread_id or None})
+            stream=self._client.request(
+                method="GET", 
+                url="/streamresponse", 
+                stream=True, 
+                params={"input":prompt, 
+                        "auth_key":self.auth_key.get_secret_value(), 
+                        "chatbot":self.model_id or None,
+                        "thread_id":self.thread_id or None}
+            )
         first_part=True
         code_started=False
         code_content=""
