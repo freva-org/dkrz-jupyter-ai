@@ -7,5 +7,5 @@ available_backends=[
     # "o1-mini",
     ## Ollama models ##
     #"llama3.2:3B",
-    "qwen2.5:3B",
+    "qwen2.5:3b",
 ]
