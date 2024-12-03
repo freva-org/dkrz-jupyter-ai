@@ -3,6 +3,7 @@ from typing import ClassVar, List
 from jupyter_ai import AuthStrategy, BaseProvider, EnvAuthStrategy, Field
 
 from .llm import FrevaChat
+from .available_backends import available_backends
 
 
 class FrevaGPTProvider(BaseProvider, FrevaChat):
@@ -35,13 +36,13 @@ class FrevaGPTProvider(BaseProvider, FrevaChat):
     update the entry point there as well.
     """
 
-    id: ClassVar[str] = "FrevaGPT-provider"
+    id: ClassVar[str] = "FrevaGPT"
     """ID for this provider class."""
 
     name: ClassVar[str] = "Freva GPT Provider"
     """User-facing name of this provider."""
 
-    models: ClassVar[List[str]] = ["test-model-1"]
+    models: ClassVar[List[str]] = available_backends
     """List of supported models by their IDs. For registry providers, this will
     be just ["*"]."""
 
