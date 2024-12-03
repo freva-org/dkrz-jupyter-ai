@@ -56,7 +56,8 @@ class Client:
         try:
             r.raise_for_status()
         except httpx.HTTPStatusError as e:
-            raise 
+            e.response.read()
+            raise ConnectionError(e.response.status_code, e.response.text) from None
         return r
     
     def request(self, *args, stream=False, **kwargs):
@@ -67,7 +68,7 @@ class Client:
                         r.raise_for_status()
                     except httpx.HTTPStatusError as e:
                         e.response.read()
-                        raise ConnectionError(e.response.text, e.response.status_code) from None
+                        raise ConnectionError(e.response.status_code, e.response.text) from None
                     complete_parts, partial_response = [], ""
                     for chunk in r.iter_bytes():
                         chunk_decoded = chunk.decode("utf-8")
