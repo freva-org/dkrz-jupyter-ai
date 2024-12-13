@@ -3,7 +3,7 @@ requires = ["hatchling>=1.4.0", "jupyterlab~=4.0"]
 build-backend = "hatchling.build"
 
 [project]
-name = "jupyter_ai_test"
+name = "jupyter_freva_gpt"
 readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.8"
@@ -21,7 +21,7 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
 ]
 version = "0.1.0"
-description = "A Jupyter AI extension."
+description = "A Jupyter AI extension for FrevaGPT."
 authors = [
     { name = "Felix Oertel", email = "oertel@dkrz.de" },
 ]
@@ -31,14 +31,14 @@ dependencies = ["jupyter_ai"]
 test = ["coverage", "pytest", "pytest-asyncio", "pytest-cov"]
 
 [project.entry-points."jupyter_ai.model_providers"]
-test-provider = "jupyter_ai_test.provider:FrevaGPTProvider"
+test-provider = "jupyter_freva_gpt.provider:FrevaGPTProvider"
 
 [project.entry-points."jupyter_ai.chat_handlers"]
-ping-slash-command = "jupyter_ai_test.slash_command:PingSlashCommand"
-docs-slash-command = "jupyter_ai_test.slash_command:DocsSlashCommand"
+ping-slash-command = "jupyter_freva_gpt.slash_command:PingSlashCommand"
+docs-slash-command = "jupyter_freva_gpt.slash_command:DocsSlashCommand"
 
 [tool.hatch.build.hooks.version]
-path = "jupyter_ai_test/_version.py"
+path = "jupyter_freva_gpt/_version.py"
 
 [tool.check-wheel-contents]
 ignore = ["W002"]
