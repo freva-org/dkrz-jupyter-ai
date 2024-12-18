@@ -374,7 +374,7 @@ class AiExtension(ExtensionApp):
             "root_chat_handlers": self.settings["jai_root_chat_handlers"],
             "chat_history": self.settings["chat_history"],
             "llm_chat_memory": self.settings["llm_chat_memory"],
-            "root_dir": self.settings["root_dir"] or self.serverapp.root_dir,
+            "root_dir": self.serverapp.root_dir,
             "dask_client_future": self.settings["dask_client_future"],
             "preferred_dir": self.settings["output_dir"] or self.serverapp.contents_manager.preferred_dir,
             "help_message_template": self.help_message_template,
