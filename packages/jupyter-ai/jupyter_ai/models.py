@@ -230,6 +230,7 @@ class IndexMetadata(BaseModel):
 class DescribeConfigResponse(BaseModel):
     model_provider_id: Optional[str]
     embeddings_provider_id: Optional[str]
+    output_dir: Optional[str]
     send_with_shift_enter: bool
     fields: Dict[str, Dict[str, Any]]
     # when sending config over REST API, do not include values of the API keys,
@@ -250,6 +251,7 @@ def forbid_none(cls, v):
 class UpdateConfigRequest(BaseModel):
     model_provider_id: Optional[str]
     embeddings_provider_id: Optional[str]
+    output_dir: Optional[str]
     send_with_shift_enter: Optional[bool]
     api_keys: Optional[Dict[str, str]]
     fields: Optional[Dict[str, Dict[str, Any]]]
@@ -272,6 +274,7 @@ class GlobalConfig(BaseModel):
 
     model_provider_id: Optional[str]
     embeddings_provider_id: Optional[str]
+    output_dir: Optional[str]
     send_with_shift_enter: bool
     fields: Dict[str, Dict[str, Any]]
     api_keys: Dict[str, str]

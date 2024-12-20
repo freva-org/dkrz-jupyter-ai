@@ -173,16 +173,6 @@ class AiExtension(ExtensionApp):
         config=True,
     )
 
-    output_dir = Unicode(
-        default_value=None,
-        allow_none=True,
-        help="""
-        Directory that output generated is written to.
-        Supercedes preferred_dir. Defaults to None.
-        """,
-        config=True,
-    )
-
     help_message_template = Unicode(
         default_value=DEFAULT_HELP_MESSAGE_TEMPLATE,
         help="""
@@ -231,10 +221,6 @@ class AiExtension(ExtensionApp):
 
         self.settings["model_parameters"] = self.model_parameters
         self.log.info(f"Configured model parameters: {self.model_parameters}")
-
-        if self.output_dir:
-            self.settings["output_dir"] = self.output_dir
-            self.log.info(f"Output will be written to: {self.output_dir}")
 
         defaults = {
             "model_provider_id": self.default_language_model,
@@ -376,7 +362,8 @@ class AiExtension(ExtensionApp):
             "llm_chat_memory": self.settings["llm_chat_memory"],
             "root_dir": self.serverapp.root_dir,
             "dask_client_future": self.settings["dask_client_future"],
-            "preferred_dir": self.settings["output_dir"] or self.serverapp.contents_manager.preferred_dir,
+            "preferred_dir": (self.settings["jai_config_manager"]._read_config().output_dir 
+                              or self.serverapp.contents_manager.preferred_dir),
             "help_message_template": self.help_message_template,
             "chat_handlers": chat_handlers,
             "context_providers": self.settings["jai_context_providers"],

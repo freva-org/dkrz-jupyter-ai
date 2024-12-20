@@ -54,6 +54,12 @@
         }
       },
       "additionalProperties": false
+    },
+    "output_dir": {
+      "$comment": "Directory to which output of extension is written to, such as notebooks generated via /generate or chat histories via /export.",
+      "type": ["string", "null"],
+      "default": null,
+      "readOnly": false
     }
   }
 }
