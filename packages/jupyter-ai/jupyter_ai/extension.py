@@ -41,6 +41,10 @@ JUPYTERNAUT_AVATAR_ROUTE = JupyternautPersona.avatar_route
 JUPYTERNAUT_AVATAR_PATH = str(
     os.path.join(os.path.dirname(__file__), "static", "jupyternaut.svg")
 )
+FREVAGPT_AVATAR_ROUTE = "api/ai/static/freva_avatar.svg"
+FREVAGPT_AVATAR_PATH = str(
+    os.path.join(os.path.dirname(__file__), "static", "freva_avatar.svg")
+)
 
 
 DEFAULT_HELP_MESSAGE_TEMPLATE = """Hi there! I'm {persona_name}, your programming assistant.
@@ -74,6 +78,12 @@ class AiExtension(ExtensionApp):
             rf"{JUPYTERNAUT_AVATAR_ROUTE}()",
             StaticFileHandler,
             {"path": JUPYTERNAUT_AVATAR_PATH},
+        ),
+        # do the same for the freva-gpt avatar.
+        (
+            rf"{FREVAGPT_AVATAR_ROUTE}()",
+            StaticFileHandler,
+            {"path": FREVAGPT_AVATAR_PATH},
         ),
     ]
 

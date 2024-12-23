@@ -1,10 +1,14 @@
-from typing import ClassVar, List
+from typing import ClassVar, List, Dict
 
-from jupyter_ai import AuthStrategy, BaseProvider, EnvAuthStrategy, Field
+from jupyter_ai import AuthStrategy, BaseProvider, EnvAuthStrategy, Field, Persona
+from langchain.prompts import PromptTemplate
 
 from .llm import FrevaChat
 from .available_backends import available_backends
 
+
+FREVAGPT_AVATAR_ROUTE = "api/ai/static/freva_avatar.svg" 
+FrevaGPTPersona = Persona(name="FrevaGPT", avatar_route=FREVAGPT_AVATAR_ROUTE)
 
 class FrevaGPTProvider(BaseProvider, FrevaChat):
     """
@@ -56,6 +60,25 @@ class FrevaGPTProvider(BaseProvider, FrevaChat):
     model_id_label: ClassVar[str] = "Model ID"
     """Human-readable label of the model ID."""
 
+    manages_history: ClassVar[bool] = False # currently set to false, as setting this true causes issues currently
+    """Whether this provider manages its own conversation history upstream. If
+    set to `True`, Jupyter AI will not pass the chat history to this provider
+    when invoked."""
+
+    persona: ClassVar[Persona] = FrevaGPTPersona
+    """
+    The **persona** of this provider, a struct that defines the name and avatar
+    shown on agent replies in the chat UI. When set to `None`, `jupyter-ai` will
+    choose a default persona when rendering agent messages by this provider.
+    """
+
+    unsupported_slash_commands: ClassVar[set] = set(("/learn", "/ask"))
+    """
+    A set of slash commands unsupported by this provider. Unsupported slash
+    commands are not shown in the help message, and cannot be used while this
+    provider is selected.
+    """
+
     pypi_package_deps: ClassVar[List[str]] = []
     """List of PyPi package dependencies."""
 
@@ -71,3 +94,11 @@ class FrevaGPTProvider(BaseProvider, FrevaChat):
     fields: ClassVar[List[Field]] = []
     """User inputs expected by this provider when initializing it. Each `Field` `f`
     should be passed in the constructor as a keyword argument, keyed by `f.key`."""
+
+    prompt_templates: Dict[str, PromptTemplate] = {
+        "code": PromptTemplate.from_template(
+                "{prompt}\n\nProduce output as source code only, "
+                "with no text or explanation before or after it. "
+                "Do not execute the code."
+            )
+    }
