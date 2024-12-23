@@ -46,8 +46,7 @@ FREVAGPT_AVATAR_PATH = str(
     os.path.join(os.path.dirname(__file__), "static", "freva_avatar.svg")
 )
 
-
-DEFAULT_HELP_MESSAGE_TEMPLATE = """Hi there! I'm {persona_name}, your programming assistant.
+DEFAULT_HELP_MESSAGE_TEMPLATE = """Hi there! I'm {persona_name}, your {assistant_function}.
 You can ask me a question using the text box below. You can also use these commands:
 {slash_commands_list}
 

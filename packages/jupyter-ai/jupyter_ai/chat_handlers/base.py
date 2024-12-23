@@ -464,9 +464,13 @@ class BaseChatHandler:
                 for cp in self.context_providers.values()
             ]
         )
-
+        assistant_function=("assistant for climate analysis tasks"
+                            if self.persona.name == "FrevaGPT"
+                            else "coding assistant"
+                            )
         help_message_body = self.help_message_template.format(
             persona_name=self.persona.name,
+            assistant_function=assistant_function,
             slash_commands_list=slash_commands_list,
             context_commands_list=context_commands_list,
         )
