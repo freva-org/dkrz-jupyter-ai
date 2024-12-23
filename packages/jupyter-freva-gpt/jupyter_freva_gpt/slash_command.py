@@ -29,8 +29,15 @@ class PingSlashCommand(BaseChatHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def process_message(self, message: HumanChatMessage):
-        self.reply(response=json.dumps(self.client.request(method="GET", url="/ping"), indent=2))
+    async def process_message(self, message: HumanChatMessage):
+        response_json: dict = self.client.request(method="GET", url="/ping")
+        response_string="# Backend information and capabilities\n"
+        for key,value in response_json.items():
+            response_string+=f"## {key}\n"
+            response_string+="```json\n"
+            response_string+=f"{json.dumps(value, indent=2)}\n"
+            response_string+="```\n"
+        self.reply(response=response_string, human_msg=message)
 
 class DocsSlashCommand(BaseChatHandler):
     """
@@ -57,5 +64,6 @@ class DocsSlashCommand(BaseChatHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def process_message(self, message: HumanChatMessage):
-        self.reply(response=self.client.request(method="GET", url="/docs"))
+    async def process_message(self, message: HumanChatMessage):
+        self.reply(response=self.client.request(method="GET", url="/docs"),
+                   human_msg=message)
