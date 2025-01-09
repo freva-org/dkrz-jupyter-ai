@@ -88,7 +88,7 @@ class FrevaGPTProvider(BaseProvider, FrevaChat):
     choose a default persona when rendering agent messages by this provider.
     """
 
-    unsupported_slash_commands: ClassVar[set] = set(("/learn", "/ask"))
+    unsupported_slash_commands: ClassVar[set] = set(("/learn", "/ask", "/generate"))
     """
     A set of slash commands unsupported by this provider. Unsupported slash
     commands are not shown in the help message, and cannot be used while this
