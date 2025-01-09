@@ -165,10 +165,7 @@ class FrevaChat(BaseChatModel):
                         self.thread_id = json.loads(content)["thread_id"]
                         self.logger.info(f"Started new thread with ID {self.thread_id}")
                     first_part=False
-                    message=Message(
-                        variant="ServerHint",
-                        content=''
-                    )
+                    continue
                 else:
                     continue
             elif variant=="Code":
