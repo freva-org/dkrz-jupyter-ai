@@ -138,7 +138,7 @@ class AiMagics(Magics):
     )
 
     default_language_model = traitlets.Unicode(
-        default_value=None,
+        default_value="FrevaGPT:gpt-4o",
         allow_none=True,
         help="""Default language model to use, as string in the format
         <provider-id>:<model-id>, defaults to None.
@@ -147,7 +147,7 @@ class AiMagics(Magics):
     )
 
     max_history = traitlets.Int(
-        default_value=2,
+        default_value=1,
         allow_none=False,
         help="""Maximum number of exchanges (user/assistant) to include in the history
         when invoking a chat model, defaults to 2.
