@@ -1,7 +1,14 @@
 from typing import ClassVar, List, Dict
 
 from jupyter_ai import AuthStrategy, BaseProvider, EnvAuthStrategy, Field, Persona
-from langchain.prompts import PromptTemplate
+from jupyter_ai_magics.providers import CHAT_SYSTEM_PROMPT, HUMAN_MESSAGE_TEMPLATE
+from langchain.prompts import (
+    ChatPromptTemplate,
+    HumanMessagePromptTemplate,
+    MessagesPlaceholder,
+    PromptTemplate,
+    SystemMessagePromptTemplate,
+)
 
 from .llm import FrevaChat
 from .available_backends import available_backends
@@ -9,6 +16,15 @@ from .available_backends import available_backends
 
 FREVAGPT_AVATAR_ROUTE = "api/ai/static/freva_avatar.svg" 
 FrevaGPTPersona = Persona(name="FrevaGPT", avatar_route=FREVAGPT_AVATAR_ROUTE)
+
+CHAT_DEFAULT_TEMPLATE = """
+{% if context %}
+Context:
+{{context}}
+
+{% endif %}
+Human: {{input}}
+AI:"""
 
 class FrevaGPTProvider(BaseProvider, FrevaChat):
     """
@@ -60,7 +76,7 @@ class FrevaGPTProvider(BaseProvider, FrevaChat):
     model_id_label: ClassVar[str] = "Model ID"
     """Human-readable label of the model ID."""
 
-    manages_history: ClassVar[bool] = False # currently set to false, as setting this true causes issues currently
+    manages_history: ClassVar[bool] = True # currently set to false, as setting this true causes issues currently
     """Whether this provider manages its own conversation history upstream. If
     set to `True`, Jupyter AI will not pass the chat history to this provider
     when invoked."""
@@ -102,3 +118,32 @@ class FrevaGPTProvider(BaseProvider, FrevaChat):
                 "Do not execute the code."
             )
     }
+
+    def get_chat_prompt_template(self) -> PromptTemplate:
+        """
+        Produce a prompt template optimised for chat conversation.
+        The template should take two variables: history and input.
+        """
+        name = self.__class__.name
+        if self.is_chat_provider:
+            return ChatPromptTemplate.from_messages(
+                [
+                    SystemMessagePromptTemplate.from_template(
+                        CHAT_SYSTEM_PROMPT
+                    ).format(provider_name=name, local_model_id=self.model_id),
+                    HumanMessagePromptTemplate.from_template(
+                        HUMAN_MESSAGE_TEMPLATE,
+                        template_format="jinja2",
+                    ),
+                ]
+            )
+        else:
+            return PromptTemplate(
+                input_variables=["input", "context"],
+                template=CHAT_SYSTEM_PROMPT.format(
+                    provider_name=name, local_model_id=self.model_id
+                )
+                + "\n\n"
+                + CHAT_DEFAULT_TEMPLATE,
+                template_format="jinja2",
+            )
