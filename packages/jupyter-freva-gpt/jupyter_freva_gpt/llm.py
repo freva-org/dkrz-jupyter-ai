@@ -1,5 +1,4 @@
 import json
-import time
 import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Iterator
@@ -152,7 +151,10 @@ class FrevaChat(BaseChatModel):
                         self.thread_id = json.loads(content)["thread_id"]
                         self.logger.info(f"Started new thread with ID {self.thread_id}")
                     first_part=False
-                    continue
+                    message=Message(
+                        variant="ServerHint",
+                        content=''
+                    )
                 else:
                     continue
             elif variant=="Code":
@@ -197,6 +199,7 @@ class FrevaChat(BaseChatModel):
                         content="\n```\n" +content[0]+"\n```\n"
                 )
             elif variant=="Image":
+                self.logger.info("Returning image")
                 base64_string=content
                 message=Message(
                     variant="Image", 
