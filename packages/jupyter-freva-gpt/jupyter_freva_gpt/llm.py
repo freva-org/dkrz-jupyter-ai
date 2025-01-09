@@ -52,19 +52,7 @@ class FrevaChat(BaseChatModel):
             get_from_dict_or_env(values, "freva_gpt_api_key", "FREVAGPT_API_KEY")
         )
         return values
-    
-    def _generate(
-    self,
-    prompt: str,
-    stop: Optional[List[str]] = None,
-    run_manager: Optional[CallbackManagerForLLMRun] = None,
-    **kwargs: Any,
-    ) -> ChatResult:
-        self.logger.info("Called _generate")
-        stream = self._stream(prompt, stop, run_manager, **kwargs)
-        chat_result: ChatResult = generate_from_stream(stream)
-        return chat_result
-    
+        
     def _translate_to_chat_generation_chunk(
             self,
             message: Message
@@ -80,6 +68,32 @@ class FrevaChat(BaseChatModel):
         return ChatGeneration(
             message=AIMessage(content=message.content)
         )
+    
+    def _generate(
+    self,
+    prompt: str,
+    stop: Optional[List[str]] = None,
+    run_manager: Optional[CallbackManagerForLLMRun] = None,
+    **kwargs: Any,
+    ) -> ChatResult:
+        self.logger.info("Called _generate")
+        try:
+            stream = self._stream(prompt, stop, run_manager, **kwargs)
+            chat_result: ChatResult = generate_from_stream(stream)
+        except ConnectionError as e:
+            if e.errno == 409:
+                self.logger.warning(
+                        (
+                        f"Encountered 409 Connection Conflict Error: {e.strerror}. ",
+                        "Creating a new thread and trying again..."
+                        )
+                )
+                self.thread_id=None
+                stream = self._stream(prompt, stop, run_manager, **kwargs)
+                chat_result: ChatResult = generate_from_stream(stream)
+            else:
+                raise
+        return chat_result
     
     def _call(
         self,
