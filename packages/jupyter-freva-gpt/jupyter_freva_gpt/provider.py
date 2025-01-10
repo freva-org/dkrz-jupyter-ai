@@ -88,7 +88,7 @@ class FrevaGPTProvider(BaseProvider, FrevaChat):
     choose a default persona when rendering agent messages by this provider.
     """
 
-    unsupported_slash_commands: ClassVar[set] = set(("/learn", "/ask", "/generate"))
+    unsupported_slash_commands: ClassVar[set] = set(("/learn", "/ask"))
     """
     A set of slash commands unsupported by this provider. Unsupported slash
     commands are not shown in the help message, and cannot be used while this
@@ -118,6 +118,11 @@ class FrevaGPTProvider(BaseProvider, FrevaChat):
                 "Do not execute the code."
             )
     }
+
+    @property
+    def allows_concurrency(self):
+        # At present, FrevaGPT providers fail with concurrent messages.
+        return False
 
     def get_chat_prompt_template(self) -> PromptTemplate:
         """
