@@ -36,7 +36,6 @@ class FrevaChat(BaseChatModel):
     thread_id: str = Field(default=None)
 
     logger = Application.instance().log
-    logger.info("Log message using JupyterLab's logging configuration")
 
     debug: bool = False
 
@@ -53,6 +52,9 @@ class FrevaChat(BaseChatModel):
         )
         return values
         
+    def _reset(self) -> None:
+        self.thread_id = None
+
     def _translate_to_chat_generation_chunk(
             self,
             message: Message
