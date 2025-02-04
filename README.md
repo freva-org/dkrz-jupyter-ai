@@ -49,6 +49,28 @@ For more specific instructions for each model provider, refer to [the model prov
 
 ## Installation
 
+### Installation of wheels on Levante (Jupyter-AI, Jupyter-AI-magics, FrevaGPT):
+1. Create a new conda environment for installing and testing the packages:
+    ```bash
+    conda create -n freva-gpt python=3.9  jupyter freva dill numpy matplotlib pandas xarray xesmf scipy netcdf4 cartopy contourpy geopy geopandas healpy astropy -c conda-forge --yes
+    conda activate freva-gpt
+    ```
+2. Install jupyter-ai, jupyter-ai-magics and jupyter-freva-gpt wheels:
+    ```bash
+    # Install jupyter-ai wheel 
+    python -m pip install /work/ch1187/clint/freva-gpt/freva-jupyter-ai/packages/jupyter-ai/dist/jupyter_ai-2.28.3a4-py3-none-any.whl
+    # Install jupyter-ai-magics wheel
+    python -m pip install /work/ch1187/clint/freva-gpt/freva-jupyter-ai/packages/jupyter-ai-magics/dist/jupyter_ai_magics-2.28.3a4-py3-none-any.whl
+    # Install jupyter-freva-gpt wheel
+    python -m pip install /work/ch1187/clint/freva-gpt/freva-jupyter-ai/packages/jupyter-freva-gpt/dist/jupyter_freva_gpt-0.1.2-py3-none-any.whl
+    ```
+3. Run a jupyter lab instance for testing:
+    ```bash
+    jupyter lab
+    ```
+
+### Installation of official version of Jupyter-AI (does not include FrevaGPT and changes made to base version in this fork)
+
 Below is a simplified overview of the installation and usage process.
 See [our official documentation](https://jupyter-ai.readthedocs.io/en/latest/users/index.html)
 for details on installing and using Jupyter AI.
@@ -64,7 +86,7 @@ section to pick the installation method that works best for you.
 
 If you want to install both the `%%ai` magic and the JupyterLab extension, you can run:
 
-    $ pip install jupyter-ai[all]
+    $ pip install 'jupyter-ai[all]'
 
 Then, restart JupyterLab. This will install every optional dependency, which
 provides access to all models currently supported by `jupyter-ai`.
