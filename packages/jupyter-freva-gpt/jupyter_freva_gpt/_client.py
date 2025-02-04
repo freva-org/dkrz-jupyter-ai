@@ -68,6 +68,9 @@ class Client:
                         r.raise_for_status()
                     except httpx.HTTPStatusError as e:
                         e.response.read()
+                        print(self._client.base_url)
+                        print("args", args)
+                        print("kwargs", kwargs)
                         raise ConnectionError(e.response.status_code, e.response.text) from None
                     complete_parts, partial_response = [], ""
                     for chunk in r.iter_bytes():

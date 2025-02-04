@@ -438,6 +438,14 @@ class BaseChatHandler:
             return self.preferred_dir
         else:
             return self.root_dir
+        
+    def reset_llm(self) -> None:
+        """Resets the llm if it has the option to"""
+        lm_provider = self.config_manager.lm_provider
+        if hasattr(lm_provider, "_reset") and self.llm:
+            self.log.info(f"Trying to reset provider: {lm_provider.name}")
+            self.llm._reset()
+            self.log.info("Successfully reset provider.")
 
     def send_help_message(self, human_msg: Optional[HumanChatMessage] = None) -> None:
         """Sends a help message to all connected clients."""
