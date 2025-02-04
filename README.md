@@ -53,7 +53,7 @@ For more specific instructions for each model provider, refer to [the model prov
 1. Create a new conda environment for installing and testing the packages (we use mamba here to resolve dependencies quickly):
     ```bash
     mamba create -n freva-gpt python=3.9 jupyter freva dill numpy matplotlib pandas xarray xesmf scipy netcdf4 cartopy contourpy geopy geopandas healpy astropy -c conda-forge --yes
-    # set up some environment variables for freva, so it knows whith which instance it will be using
+    # set up some environment variables for freva, so it knows which instance it will be using
     conda env config vars set EVALUATION_SYSTEM_CONFIG_DIR=/work/ch1187/clint/freva-dev/freva -n freva-gpt
     conda env config vars set EVALUATION_SYSTEM_CONFIG_FILE=/work/ch1187/clint/freva-dev/freva/evaluation_system.conf -n freva-gpt
     mamba activate freva-gpt
