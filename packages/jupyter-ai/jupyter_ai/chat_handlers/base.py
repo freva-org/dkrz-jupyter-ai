@@ -438,6 +438,14 @@ class BaseChatHandler:
             return self.preferred_dir
         else:
             return self.root_dir
+        
+    def reset_llm(self) -> None:
+        """Resets the llm if it has the option to"""
+        lm_provider = self.config_manager.lm_provider
+        if hasattr(lm_provider, "_reset") and self.llm:
+            self.log.info(f"Trying to reset provider: {lm_provider.name}")
+            self.llm._reset()
+            self.log.info("Successfully reset provider.")
 
     def send_help_message(self, human_msg: Optional[HumanChatMessage] = None) -> None:
         """Sends a help message to all connected clients."""
@@ -464,9 +472,13 @@ class BaseChatHandler:
                 for cp in self.context_providers.values()
             ]
         )
-
+        assistant_function=("assistant for climate analysis tasks"
+                            if self.persona.name == "FrevaGPT"
+                            else "coding assistant"
+                            )
         help_message_body = self.help_message_template.format(
             persona_name=self.persona.name,
+            assistant_function=assistant_function,
             slash_commands_list=slash_commands_list,
             context_commands_list=context_commands_list,
         )

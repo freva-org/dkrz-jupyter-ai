@@ -324,6 +324,7 @@ class RootChatHandler(JupyterHandler, websocket.WebSocketHandler):
             self.pending_messages.clear()
             self.llm_chat_memory.clear()
             self.broadcast_message(ClearMessage())
+            self.settings["jai_chat_handlers"]["default"].reset_llm()
             self.settings["jai_chat_handlers"]["default"].send_help_message()
             return
 

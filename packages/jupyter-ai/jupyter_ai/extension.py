@@ -41,9 +41,12 @@ JUPYTERNAUT_AVATAR_ROUTE = JupyternautPersona.avatar_route
 JUPYTERNAUT_AVATAR_PATH = str(
     os.path.join(os.path.dirname(__file__), "static", "jupyternaut.svg")
 )
+FREVAGPT_AVATAR_ROUTE = "api/ai/static/freva_avatar.svg"
+FREVAGPT_AVATAR_PATH = str(
+    os.path.join(os.path.dirname(__file__), "static", "freva_avatar.svg")
+)
 
-
-DEFAULT_HELP_MESSAGE_TEMPLATE = """Hi there! I'm {persona_name}, your programming assistant.
+DEFAULT_HELP_MESSAGE_TEMPLATE = """Hi there! I'm {persona_name}, your {assistant_function}.
 You can ask me a question using the text box below. You can also use these commands:
 {slash_commands_list}
 
@@ -75,11 +78,17 @@ class AiExtension(ExtensionApp):
             StaticFileHandler,
             {"path": JUPYTERNAUT_AVATAR_PATH},
         ),
+        # do the same for the freva-gpt avatar.
+        (
+            rf"{FREVAGPT_AVATAR_ROUTE}()",
+            StaticFileHandler,
+            {"path": FREVAGPT_AVATAR_PATH},
+        ),
     ]
 
     allowed_providers = List(
         Unicode(),
-        default_value=None,
+        default_value=["FrevaGPT",],
         help="Identifiers of allowlisted providers. If `None`, all are allowed.",
         allow_none=True,
         config=True,
@@ -362,7 +371,8 @@ class AiExtension(ExtensionApp):
             "llm_chat_memory": self.settings["llm_chat_memory"],
             "root_dir": self.serverapp.root_dir,
             "dask_client_future": self.settings["dask_client_future"],
-            "preferred_dir": self.serverapp.contents_manager.preferred_dir,
+            "preferred_dir": (self.settings["jai_config_manager"]._read_config().output_dir 
+                              or self.serverapp.contents_manager.preferred_dir),
             "help_message_template": self.help_message_template,
             "chat_handlers": chat_handlers,
             "context_providers": self.settings["jai_context_providers"],
@@ -454,7 +464,8 @@ class AiExtension(ExtensionApp):
             "llm_chat_memory": self.settings["llm_chat_memory"],
             "root_dir": self.serverapp.root_dir,
             "dask_client_future": self.settings["dask_client_future"],
-            "preferred_dir": self.serverapp.contents_manager.preferred_dir,
+            "preferred_dir":(self.settings["jai_config_manager"]._read_config().output_dir 
+                              or self.serverapp.contents_manager.preferred_dir),
             "chat_handlers": self.settings["jai_chat_handlers"],
             "context_providers": self.settings["jai_context_providers"],
         }

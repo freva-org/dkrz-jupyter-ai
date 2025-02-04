@@ -1,10 +1,30 @@
-from typing import ClassVar, List
+from typing import ClassVar, List, Dict
 
-from jupyter_ai import AuthStrategy, BaseProvider, EnvAuthStrategy, Field
+from jupyter_ai import AuthStrategy, BaseProvider, EnvAuthStrategy, Field, Persona
+from jupyter_ai_magics.providers import CHAT_SYSTEM_PROMPT, HUMAN_MESSAGE_TEMPLATE
+from langchain.prompts import (
+    ChatPromptTemplate,
+    HumanMessagePromptTemplate,
+    MessagesPlaceholder,
+    PromptTemplate,
+    SystemMessagePromptTemplate,
+)
 
 from .llm import FrevaChat
 from .available_backends import available_backends
 
+
+FREVAGPT_AVATAR_ROUTE = "api/ai/static/freva_avatar.svg" 
+FrevaGPTPersona = Persona(name="FrevaGPT", avatar_route=FREVAGPT_AVATAR_ROUTE)
+
+CHAT_DEFAULT_TEMPLATE = """
+{% if context %}
+Context:
+{{context}}
+
+{% endif %}
+Human: {{input}}
+AI:"""
 
 class FrevaGPTProvider(BaseProvider, FrevaChat):
     """
@@ -56,6 +76,25 @@ class FrevaGPTProvider(BaseProvider, FrevaChat):
     model_id_label: ClassVar[str] = "Model ID"
     """Human-readable label of the model ID."""
 
+    manages_history: ClassVar[bool] = True # currently set to false, as setting this true causes issues currently
+    """Whether this provider manages its own conversation history upstream. If
+    set to `True`, Jupyter AI will not pass the chat history to this provider
+    when invoked."""
+
+    persona: ClassVar[Persona] = FrevaGPTPersona
+    """
+    The **persona** of this provider, a struct that defines the name and avatar
+    shown on agent replies in the chat UI. When set to `None`, `jupyter-ai` will
+    choose a default persona when rendering agent messages by this provider.
+    """
+
+    unsupported_slash_commands: ClassVar[set] = set(("/learn", "/ask"))
+    """
+    A set of slash commands unsupported by this provider. Unsupported slash
+    commands are not shown in the help message, and cannot be used while this
+    provider is selected.
+    """
+
     pypi_package_deps: ClassVar[List[str]] = []
     """List of PyPi package dependencies."""
 
@@ -71,3 +110,45 @@ class FrevaGPTProvider(BaseProvider, FrevaChat):
     fields: ClassVar[List[Field]] = []
     """User inputs expected by this provider when initializing it. Each `Field` `f`
     should be passed in the constructor as a keyword argument, keyed by `f.key`."""
+
+    prompt_templates: Dict[str, PromptTemplate] = {
+        "code": PromptTemplate.from_template(
+                "{prompt}\n\nProduce output as source code only, "
+                "with no text or explanation before or after it. "
+                "Do not execute the code."
+            )
+    }
+
+    @property
+    def allows_concurrency(self):
+        # At present, FrevaGPT providers fail with concurrent messages.
+        return False
+
+    def get_chat_prompt_template(self) -> PromptTemplate:
+        """
+        Produce a prompt template optimised for chat conversation.
+        The template should take two variables: history and input.
+        """
+        name = self.__class__.name
+        if self.is_chat_provider:
+            return ChatPromptTemplate.from_messages(
+                [
+                    SystemMessagePromptTemplate.from_template(
+                        CHAT_SYSTEM_PROMPT
+                    ).format(provider_name=name, local_model_id=self.model_id),
+                    HumanMessagePromptTemplate.from_template(
+                        HUMAN_MESSAGE_TEMPLATE,
+                        template_format="jinja2",
+                    ),
+                ]
+            )
+        else:
+            return PromptTemplate(
+                input_variables=["input", "context"],
+                template=CHAT_SYSTEM_PROMPT.format(
+                    provider_name=name, local_model_id=self.model_id
+                )
+                + "\n\n"
+                + CHAT_DEFAULT_TEMPLATE,
+                template_format="jinja2",
+            )
