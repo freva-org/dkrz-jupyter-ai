@@ -29,7 +29,6 @@ class FrevaChat(BaseChatModel):
 
     model_id: str
     base_url:str = Field(default="https://freva.dkrz.de/api/chatbot")
-    auth_key:Optional[SecretStr] = Field(default=None)
     client_kwargs : Optional[Dict] = {}
     _client: Client = Field(default=None)
     stop: str = Field(default="Generation complete")
@@ -47,9 +46,6 @@ class FrevaChat(BaseChatModel):
     @classmethod
     def _validate_env(cls, values:Dict) -> Dict:
         values["_client"] = Client(host=values["base_url"], **values["client_kwargs"])
-        values["auth_key"] = convert_to_secret_str(
-            get_from_dict_or_env(values, "freva_gpt_api_key", "FREVAGPT_API_KEY")
-        )
         return values
         
     def _reset(self) -> None:
@@ -148,8 +144,7 @@ class FrevaChat(BaseChatModel):
                 method="GET", 
                 url="/streamresponse", 
                 stream=True, 
-                params={"input":prompt, 
-                        "auth_key":self.auth_key.get_secret_value(), 
+                params={"input":prompt,  
                         "chatbot":self.model_id or None,
                         "thread_id":self.thread_id or None}
             )

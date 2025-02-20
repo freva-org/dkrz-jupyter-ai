@@ -1,6 +1,6 @@
 from typing import ClassVar, List, Dict
 
-from jupyter_ai import AuthStrategy, BaseProvider, EnvAuthStrategy, Field, Persona
+from jupyter_ai import BaseProvider, Field, Persona
 from jupyter_ai_magics.providers import CHAT_SYSTEM_PROMPT, HUMAN_MESSAGE_TEMPLATE
 from langchain.prompts import (
     ChatPromptTemplate,
@@ -99,12 +99,6 @@ class FrevaGPTProvider(BaseProvider, FrevaChat):
 
     pypi_package_deps: ClassVar[List[str]] = []
     """List of PyPi package dependencies."""
-
-    auth_strategy: ClassVar[AuthStrategy] = EnvAuthStrategy(
-        name="FREVAGPT_API_KEY", keyword_param="freva_gpt_api_key"
-    )
-    """Authentication/authorization strategy. Declares what credentials are
-    required to use this model provider. Generally should not be `None`."""
 
     registry: ClassVar[bool] = False
     """Whether this provider is a registry provider."""
