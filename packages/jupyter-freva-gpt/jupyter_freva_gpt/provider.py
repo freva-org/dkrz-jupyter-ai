@@ -26,6 +26,8 @@ Context:
 Human: {{input}}
 AI:"""
 
+force_default = False
+
 class FrevaGPTProvider(BaseProvider, FrevaChat):
     """
     A test model provider implementation for developers to build from. A model
@@ -62,7 +64,7 @@ class FrevaGPTProvider(BaseProvider, FrevaChat):
     name: ClassVar[str] = "Freva GPT Provider"
     """User-facing name of this provider."""
 
-    models: ClassVar[List[str]] = available_backends
+    models: ClassVar[List[str]] = [available_backends[0]] if force_default else available_backends
     """List of supported models by their IDs. For registry providers, this will
     be just ["*"]."""
 
