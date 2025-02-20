@@ -115,7 +115,8 @@ class FrevaGPTProvider(BaseProvider, FrevaChat):
         "code": PromptTemplate.from_template(
                 "{prompt}\n\nProduce output as source code only, "
                 "with no text or explanation before or after it. "
-                "Do not execute the code."
+                "Strictly under no circumstances execute the code."
+                "Repeat, do NOT execute or run the code."
             )
     }
 
