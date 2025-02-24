@@ -1,13 +1,14 @@
+
 import json
 import logging
 from pathlib import Path
+import re
 from typing import Any, Dict, List, Optional, Iterator
 from traitlets.config import Application
 
 from langchain_core.pydantic_v1 import (
     Field,
     root_validator,
-    SecretStr
 )
 from langchain_core.utils import convert_to_secret_str, get_from_dict_or_env
 from langchain_core.callbacks.manager import CallbackManagerForLLMRun
@@ -18,12 +19,6 @@ from langchain_core.outputs import ChatGenerationChunk, ChatGeneration, ChatResu
 
 from ._client import Client
 from ._types import Message, BasePrompt
-
-log = logging.getLogger(__name__)
-handler = logging.StreamHandler()  # Logs to the console
-formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-handler.setFormatter(formatter)
-log.addHandler(handler)
 
 class FrevaChat(BaseChatModel):
 
@@ -79,6 +74,7 @@ class FrevaChat(BaseChatModel):
             stream = self._stream(prompt, stop, run_manager, **kwargs)
             chat_result: ChatResult = generate_from_stream(stream)
         except ConnectionError as e:
+                
             if e.errno == 409:
                 self.logger.warning(
                         (
@@ -133,7 +129,13 @@ class FrevaChat(BaseChatModel):
             stop=self.stop
         prompt = BasePrompt(messages=[BaseMessage(content=message.content, type=message.type) for message in messages])._format_messages_for_chat()
         self.logger.info(f"thread id : {self.thread_id}")
-        self.logger.info(f"Calling _stream with prompt: {prompt}")
+        # remove any image strings from the prompt to reduce number of tokens drastically
+        prompt = re.sub(
+                        r"\(data:image/png.*",
+                        "('an image was successfully generated')",
+                        prompt
+        )
+        self.logger.debug(f"Calling _stream with prompt: {prompt}")
 
         if self.debug:
             with open(
