@@ -120,6 +120,12 @@ class FrevaGPTProvider(BaseProvider, FrevaChat):
     def allows_concurrency(self):
         # At present, FrevaGPT providers fail with concurrent messages.
         return False
+    
+    def get_prompt_template(self, format) -> PromptTemplate:
+        # override parent class method to ensure custom prompt templates are used
+        if format in self.prompt_templates.keys():
+            return self.prompt_templates[format]
+        return super().get_prompt_template(format)
 
     def get_chat_prompt_template(self) -> PromptTemplate:
         """
