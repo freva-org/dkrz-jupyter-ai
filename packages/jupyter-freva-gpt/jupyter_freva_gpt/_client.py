@@ -52,33 +52,38 @@ class Client:
         self.logger = logging.getLogger(__name__)
 
     def _request_raw(self, *args, **kwargs):
-        r = self._client.request(*args, **kwargs)
         try:
-            r.raise_for_status()
-        except httpx.HTTPStatusError as e:
-            e.response.read()
-            raise ConnectionError(e.response.status_code, e.response.text) from None
+            r = self._client.request(*args, **kwargs)
+            try:
+                r.raise_for_status()
+            except httpx.HTTPStatusError as e:
+                e.response.read()
+                raise ConnectionError(e.response.status_code, e.response.text) from None
+        except httpx.ConnectError as e:
+            raise ConnectionError(101, f"Failed to connect to {e.request.url}. Please try again." ) from None
         return r
     
     def request(self, *args, stream=False, **kwargs):
         if stream:
             def inner():
-                with self._client.stream(*args, **kwargs) as r:
-                    try:
-                        r.raise_for_status()
-                    except httpx.HTTPStatusError as e:
-                        e.response.read()
-                        self.logger.debug(self._client.base_url)
-                        self.logger.debug("args", args)
-                        self.logger.debug("kwargs", kwargs)
-                        raise ConnectionError(e.response.status_code, e.response.text) from None
-                    complete_parts, partial_response = [], ""
-                    for chunk in r.iter_bytes():
-                        chunk_decoded = chunk.decode("utf-8")
-                        complete_parts, partial_response = self._process_chunks(chunk_decoded, partial_response)
-                        if complete_parts:
-                            for part in complete_parts:
-                                yield part
+                try:
+                    with self._client.stream(*args, **kwargs) as r:
+                        try:
+                            r.raise_for_status()
+                        except httpx.HTTPStatusError as e:
+                            e.response.read()
+                            raise ConnectionError(e.response.status_code, e.response.text) from None
+                        except httpx.ConnectError as e:
+                            raise ConnectionError(101, "Failed to connect. Please try again." ) from None
+                        complete_parts, partial_response = [], ""
+                        for chunk in r.iter_bytes():
+                            chunk_decoded = chunk.decode("utf-8")
+                            complete_parts, partial_response = self._process_chunks(chunk_decoded, partial_response)
+                            if complete_parts:
+                                for part in complete_parts:
+                                    yield part
+                except httpx.ConnectError as e:
+                    raise ConnectionError(101, f"Failed to connect to url {e.request.url}. Please try again." ) from None
             return inner()
         else:
             try:
