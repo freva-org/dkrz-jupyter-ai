@@ -23,7 +23,7 @@ from ._types import Message, BasePrompt
 class FrevaChat(BaseChatModel):
 
     model_id: str
-    base_url:str = Field(default="https://freva.dkrz.de/api/chatbot")
+    base_url:str = Field(default="https://nextgems.dkrz.de/api/chatbot")
     client_kwargs : Optional[Dict] = {}
     _client: Client = Field(default=None)
     stop: str = Field(default="Generation complete")
