@@ -1,6 +1,7 @@
 
 import json
 import logging
+import os
 from pathlib import Path
 import re
 from typing import Any, Dict, List, Optional, Iterator
@@ -20,10 +21,12 @@ from langchain_core.outputs import ChatGenerationChunk, ChatGeneration, ChatResu
 from ._client import Client
 from ._types import Message, BasePrompt
 
+default_user = os.environ["USER"] if "USER" in os.environ.keys() else "test-user"
 class FrevaChat(BaseChatModel):
 
     model_id: str
     base_url:str = Field(default="https://nextgems.dkrz.de/api/chatbot")
+    user:str = Field(default=default_user)
     client_kwargs : Optional[Dict] = {}
     _client: Client = Field(default=None)
     stop: str = Field(default="Generation complete")
@@ -142,13 +145,15 @@ class FrevaChat(BaseChatModel):
                 file=f"{Path(__file__).parent}/example_conversation.json") as fo:
                     stream=json.load(fo)
         else:
+            self.logger.debug(f"Sending request to /streamresponse with following params input={prompt}, chatbot={self.model_id}, thread_id={self.thread_id}, user={self.user}")
             stream=self._client.request(
                 method="GET", 
                 url="/streamresponse", 
                 stream=True, 
                 params={"input":prompt,  
                         "chatbot":self.model_id or None,
-                        "thread_id":self.thread_id or None}
+                        "thread_id":self.thread_id or None,
+                        "user": self.user or None}
             )
         first_part=True
         code_started=False
