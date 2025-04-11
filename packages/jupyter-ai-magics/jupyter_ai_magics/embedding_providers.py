@@ -1,4 +1,4 @@
-from typing import ClassVar, List
+from typing import ClassVar, List, Optional
 
 from jupyter_ai_magics.providers import (
     AuthStrategy,
@@ -6,19 +6,20 @@ from jupyter_ai_magics.providers import (
     Field,
     MultiEnvAuthStrategy,
 )
-from langchain.pydantic_v1 import BaseModel, Extra
 from langchain_community.embeddings import (
     GPT4AllEmbeddings,
     HuggingFaceHubEmbeddings,
     QianfanEmbeddingsEndpoint,
 )
+from pydantic import BaseModel, ConfigDict
 
 
 class BaseEmbeddingsProvider(BaseModel):
     """Base class for embedding providers"""
 
-    class Config:
-        extra = Extra.allow
+    # pydantic v2 model config
+    # upstream docs: https://docs.pydantic.dev/latest/api/config/#pydantic.config.ConfigDict.extra
+    model_config = ConfigDict(extra="allow")
 
     id: ClassVar[str] = ...
     """ID for this provider class."""
@@ -29,6 +30,10 @@ class BaseEmbeddingsProvider(BaseModel):
     models: ClassVar[List[str]] = ...
     """List of supported models by their IDs. For registry providers, this will
     be just ["*"]."""
+
+    help: ClassVar[Optional[str]] = None
+    """Text to display in lieu of a model list for a registry provider that does
+    not provide a list of models."""
 
     model_id_key: ClassVar[str] = ...
     """Kwarg expected by the upstream LangChain provider."""
@@ -69,6 +74,10 @@ class HfHubEmbeddingsProvider(BaseEmbeddingsProvider, HuggingFaceHubEmbeddings):
     name = "Hugging Face Hub"
     models = ["*"]
     model_id_key = "repo_id"
+    help = (
+        "See [https://huggingface.co/docs/chat-ui/en/configuration/embeddings](https://huggingface.co/docs/chat-ui/en/configuration/embeddings) for reference. "
+        "Pass an embedding model's name; for example, `sentence-transformers/all-MiniLM-L6-v2`."
+    )
     # ipywidgets needed to suppress tqdm warning
     # https://stackoverflow.com/questions/67998191
     # tqdm is a dependency of huggingface_hub

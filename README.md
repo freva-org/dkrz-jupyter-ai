@@ -22,7 +22,7 @@ Documentation is available on [ReadTheDocs](https://jupyter-ai.readthedocs.io/en
 
 You will need to have installed the following software to use Jupyter AI:
 
-- Python 3.8 - 3.12
+- Python 3.9 - 3.12
 - JupyterLab 4 or Notebook 7
 
 In addition, you will need access to at least one model provider.
@@ -36,14 +36,29 @@ To use any AI model provider within this notebook, you'll need the appropriate c
 
 Obtain the necessary credentials, such as API keys, from your model provider's platform.
 
-You can set your keys using environment variables or in a code cell in your notebook.
-In a code cell, you can use the %env magic command to set the credentials as follows:
+You can set your keys in a code cell in your notebook or using environment variables.
+In a code cell, you can set the credentials as follows without revealing your key in the notebook:
 
 ```python
 # NOTE: Replace 'PROVIDER_API_KEY' with the credential key's name,
-# and replace 'YOUR_API_KEY_HERE' with the key.
+# and enter the API key when prompted by using the code shown below.
+
+import getpass
+
+# Enter your key
+key = getpass.getpass('Enter your PROVIDER API key: ')
+
+# Set the environment variable without displaying the full key
+os.environ['PROVIDER_API_KEY'] = key
+```
+
+:::{note}
+:name: using-env-key
+You may also set these keys directly using the `%env` magic command, but the key value may be echoed in the cell output. If you prefer to use `%env`, be sure to not share the notebook with people you don't trust, as this may leak your API keys.
+```
 %env PROVIDER_API_KEY=YOUR_API_KEY_HERE
 ```
+:::
 
 For more specific instructions for each model provider, refer to [the model providers documentation](https://jupyter-ai.readthedocs.io/en/latest/users/index.html#model-providers).
 
@@ -89,7 +104,7 @@ section to pick the installation method that works best for you.
 
 If you want to install both the `%%ai` magic and the JupyterLab extension, you can run:
 
-    $ pip install 'jupyter-ai[all]'
+    $ pip install jupyter-ai[all]
 
 Then, restart JupyterLab. This will install every optional dependency, which
 provides access to all models currently supported by `jupyter-ai`.

@@ -11,7 +11,8 @@ please see the {doc}`developer's guide </developers/index>`.
 ## Prerequisites
 
 You can run Jupyter AI on any system that can run a supported Python version
-from 3.8 to 3.12, including recent Windows, macOS, and Linux versions.
+from 3.9 to 3.12, including recent Windows, macOS, and Linux versions. Python
+3.8 support is also available in Jupyter AI v2.29.1 and below.
 
 If you use `conda`, you can install Python 3.12 in your environment by running:
 
@@ -106,7 +107,7 @@ section to pick the installation method that works best for you.
 
 If you want to install both the `%%ai` magic and the JupyterLab extension, you can run:
 
-    $ pip install jupyter-ai[all]
+    $ pip install 'jupyter-ai[all]'
 
 Then, restart JupyterLab. This will install every optional dependency, which
 provides access to all models currently supported by `jupyter-ai`.
@@ -114,10 +115,16 @@ provides access to all models currently supported by `jupyter-ai`.
 If you are not using JupyterLab and you only want to install the Jupyter AI
 `%%ai` magic, you can run:
 
-    $ pip install jupyter-ai-magics[all]
+    $ pip install 'jupyter-ai-magics[all]'
 
 `jupyter-ai` depends on `jupyter-ai-magics`, so installing `jupyter-ai`
 automatically installs `jupyter-ai-magics`.
+
+:::{warning}
+:name: quoting-cli-arguments
+If running the above commands result in an error like `zsh: no matches found: jupyter-ai[all]`, this is because the `jupyter-ai[all]` argument must be surrounded by single or double quotes. Some shells reserve square brackets for pattern matching, so arguments containing square brackets must be quoted.
+:::
+
 
 ### Minimal installation via `pip`
 
@@ -334,29 +341,18 @@ The chat backend remembers the last two exchanges in your conversation and passe
 
 ### Amazon Bedrock Usage
 
-Jupyter AI enables use of language models hosted on [Amazon Bedrock](https://aws.amazon.com/bedrock/) on AWS. First, ensure that you have authentication to use AWS using the `boto3` SDK with credentials stored in the `default` profile. Guidance on how to do this can be found in the [`boto3` documentation](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html).
+Jupyter AI enables use of language models hosted on [Amazon Bedrock](https://aws.amazon.com/bedrock/) on AWS. Ensure that you have authentication to use AWS using the `boto3` SDK with credentials stored in the `default` profile. Guidance on how to do this can be found in the [`boto3` documentation](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html).
 
-For more detailed workflows, see [Using Amazon Bedrock with Jupter AI](bedrock.md).
+For details on enabling model access in your AWS account, using cross-region inference, or invoking custom/provisioned models, please see our dedicated documentation page on [using Amazon Bedrock in Jupyter AI](bedrock.md).
 
-Bedrock supports many language model providers such as AI21 Labs, Amazon, Anthropic, Cohere, Meta, and Mistral AI. To use the base models from any supported provider make sure to enable them in Amazon Bedrock by using the AWS console. You should also select embedding models in Bedrock in addition to language completion models if you intend to use retrieval augmented generation (RAG) on your documents.
 
-You may now select a chosen Bedrock model from the drop-down menu box title `Completion model` in the chat interface. If RAG is going to be used then pick an embedding model that you chose from the Bedrock models as well. An example of these selections is shown below:
+### OpenRouter and OpenAI Interface Usage
 
-<img src="../_static/bedrock-chat-basemodel.png"
-    width="50%"
-    alt='Screenshot of the Jupyter AI chat panel where the base language model and embedding model is selected.'
-    class="screenshot" />
+Jupyter AI enables use of language models accessible through [OpenRouter](https://openrouter.ai)'s unified interface. Examples of models that may be accessed via OpenRouter are: [Deepseek](https://openrouter.ai/deepseek/deepseek-chat), [Qwen](https://openrouter.ai/qwen/), [mistral](https://openrouter.ai/mistralai/), etc. OpenRouter enables usage of any model conforming to the OpenAI API.
 
-If your provider requires an API key, please enter it in the box that will show for that provider. Make sure to click on `Save Changes` to ensure that the inputs have been saved.
+Likewise, for many models, you may directly choose the OpenAI provider in Jupyter AI instead of OpenRouter in the same way.
 
-Bedrock also allows custom models to be trained from scratch or fine-tuned from a base model. Jupyter AI enables a custom model to be called in the chat panel using its `arn` (Amazon Resource Name). The interface is shown below:
-
-<img src="../_static/bedrock-chat-custom-model-arn.png"
-    width="75%"
-    alt='Screenshot of the Jupyter AI chat panel where the custom model is selected using model arn.'
-    class="screenshot" />
-
-For detailed workflows, see [Using Amazon Bedrock with Jupter AI](bedrock.md).
+For details on enabling model access via the AI Settings and using models via OpenRouter or OpenAI, please see the dedicated documentation page on using [OpenRouter and OpenAI providers in Jupyter AI](openrouter.md).
 
 
 ### SageMaker endpoints usage
@@ -446,7 +442,26 @@ models.
 
 ### Ollama usage
 
-To get started, follow the instructions on the [Ollama website](https://ollama.com/) to set up `ollama` and download the models locally. To select a model, enter the model name in the settings panel, for example `deepseek-coder-v2`.
+To get started, follow the instructions on the [Ollama website](https://ollama.com/) to set up `ollama` and download the models locally. To select a model, enter the model name in the settings panel, for example `deepseek-coder-v2`.  You can see all locally available models with  `ollama list`.
+
+For the Ollama models to be available to JupyterLab-AI, your Ollama server _must_ be running. You can check that this is the case by calling `ollama serve` at the terminal, and should see something like:
+
+```
+$ ollama serve
+Error: listen tcp 127.0.0.1:11434: bind: address already in use
+```
+
+In some platforms (e.g. macOS or Windows), there may also be a graphical user interface or application that lets you start/stop the Ollama server from a menu.
+
+:::{tip}
+If you don't see Ollama listed as a model provider in the Jupyter-AI configuration box, despite confirming that your Ollama server is active, you may be missing the  [`langchain-ollama` python package](https://pypi.org/project/langchain-ollama/) that is necessary for Jupyter-AI to interface with Ollama, as indicated in the [model providers](#model-providers) section above.
+
+You can install it with `pip install langchain-ollama` (as of Feb'2025 it is not available on conda-forge).
+:::
+
+### vLLM usage
+
+`vLLM` is a fast and easy-to-use library for LLM inference and serving. The [vLLM website](https://docs.vllm.ai/en/latest/) explains installation and usage. To use `vLLM` in Jupyter AI, please see the dedicated documentation page on using [vLLM in Jupyter AI](vllm.md).
 
 ### Asking about something in your notebook
 
@@ -713,6 +728,7 @@ We currently support the following language model providers:
 - `cohere`
 - `huggingface_hub`
 - `nvidia-chat`
+- `ollama`
 - `openai`
 - `openai-chat`
 - `sagemaker-endpoint`
@@ -999,7 +1015,38 @@ The location of `ipython_config.py` file is documented in [IPython configuration
 
 You can use magic commands with models hosted using Amazon SageMaker.
 
-First, make sure that you've set your `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` environment variables either before starting JupyterLab or using the `%env` magic command within JupyterLab. For more information about environment variables, see [Environment variables to configure the AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html) in AWS's documentation.
+First, make sure that you've set your `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` environment variables  before starting JupyterLab as follows:
+```
+os.environ['AWS_ACCESS_KEY_ID'] = <your_aws_access_key_id>
+os.environ['AWS_SECRET_ACCESS_KEY'] = <your_aws_secret_access_key>
+```
+
+You can also set the keys interactively and securely using the following code in your notebook:
+
+```python
+# NOTE: Enter the AWS access key id and the AWS secret access key when prompted by the code below
+
+import getpass
+
+# Enter your keys
+access_key = getpass.getpass('Enter your AWS ACCESS KEY ID: ')
+secret_access_key = getpass.getpass('Enter your AWS SECRET ACCESS KEY: ')
+
+# Set the environment variable without displaying the full key
+os.environ['AWS_ACCESS_KEY_ID'] = access_key
+os.environ['AWS_SECRET_ACCESS_KEY'] = secret_access_key
+```
+
+:::{note}
+:name: using-env-key
+You may also set these keys directly using the `%env` magic command, but the key value may be echoed in the cell output. If you prefer to use `%env`, be sure to not share the notebook with people you don't trust, as this may leak your API keys.
+```
+%env AWS_ACCESS_KEY_ID = <your_aws_access_key_id>
+%env AWS_SECRET_ACCESS_KEY = <your_aws_secret_access_key>
+```
+:::
+
+For more information about environment variables, see [Environment variables to configure the AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html) in AWS's documentation.
 
 Jupyter AI supports language models hosted on SageMaker endpoints that use JSON schemas. Authenticate with AWS via the `boto3` SDK and have the credentials stored in the `default` profile.  Guidance on how to do this can be found in the [`boto3` documentation](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html).
 
@@ -1038,6 +1085,11 @@ jupyter lab --AiExtension.default_language_model=bedrock-chat:anthropic.claude-v
 Specify default embedding model
 ```bash
 jupyter lab --AiExtension.default_embeddings_model=bedrock:amazon.titan-embed-text-v1
+```
+
+Specify default completions model
+```bash
+jupyter lab --AiExtension.default_completions_model=bedrock-chat:anthropic.claude-v2
 ```
 
 Specify default API keys

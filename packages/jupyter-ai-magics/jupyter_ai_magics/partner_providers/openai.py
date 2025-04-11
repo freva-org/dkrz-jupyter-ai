@@ -37,22 +37,17 @@ class ChatOpenAIProvider(BaseProvider, ChatOpenAI):
     name = "OpenAI"
     models = [
         "gpt-3.5-turbo",
-        "gpt-3.5-turbo-0125",
-        "gpt-3.5-turbo-0301",  # Deprecated as of 2024-06-13
-        "gpt-3.5-turbo-0613",  # Deprecated as of 2024-06-13
         "gpt-3.5-turbo-1106",
-        "gpt-3.5-turbo-16k",
-        "gpt-3.5-turbo-16k-0613",  # Deprecated as of 2024-06-13
         "gpt-4",
         "gpt-4-turbo",
         "gpt-4-turbo-preview",
         "gpt-4-0613",
-        "gpt-4-32k",
-        "gpt-4-32k-0613",
         "gpt-4-0125-preview",
         "gpt-4-1106-preview",
         "gpt-4o",
+        "gpt-4o-2024-11-20",
         "gpt-4o-mini",
+        "chatgpt-4o-latest",
     ]
     model_id_key = "model_name"
     pypi_package_deps = ["langchain_openai"]
@@ -79,6 +74,27 @@ class ChatOpenAIProvider(BaseProvider, ChatOpenAI):
             error_details = e.json_body.get("error", {})
             return error_details.get("code") == "invalid_api_key"
         return False
+
+
+class ChatOpenAICustomProvider(BaseProvider, ChatOpenAI):
+    id = "openai-chat-custom"
+    name = "OpenAI (general interface)"
+    models = ["*"]
+    model_id_key = "model_name"
+    model_id_label = "Model ID"
+    pypi_package_deps = ["langchain_openai"]
+    auth_strategy = EnvAuthStrategy(name="OPENAI_API_KEY")
+    fields = [
+        TextField(
+            key="openai_api_base", label="Base API URL (optional)", format="text"
+        ),
+        TextField(
+            key="openai_organization", label="Organization (optional)", format="text"
+        ),
+        TextField(key="openai_proxy", label="Proxy (optional)", format="text"),
+    ]
+    help = "Supports non-OpenAI models that use the OpenAI API interface. Replace the OpenAI API key with the API key for the chosen provider."
+    registry = True
 
 
 class AzureChatOpenAIProvider(BaseProvider, AzureChatOpenAI):
@@ -114,6 +130,22 @@ class OpenAIEmbeddingsProvider(BaseEmbeddingsProvider, OpenAIEmbeddings):
     auth_strategy = EnvAuthStrategy(name="OPENAI_API_KEY")
 
 
+class OpenAIEmbeddingsCustomProvider(BaseEmbeddingsProvider, OpenAIEmbeddings):
+    id = "openai-custom"
+    name = "OpenAI (general interface)"
+    models = ["*"]
+    model_id_key = "model"
+    pypi_package_deps = ["langchain_openai"]
+    auth_strategy = EnvAuthStrategy(name="OPENAI_API_KEY")
+    registry = True
+    fields = [
+        TextField(
+            key="openai_api_base", label="Base API URL (optional)", format="text"
+        ),
+    ]
+    help = "Supports non-OpenAI embedding models that use the OpenAI API interface. Replace the OpenAI API key with the API key for the chosen provider."
+
+
 class AzureOpenAIEmbeddingsProvider(BaseEmbeddingsProvider, AzureOpenAIEmbeddings):
     id = "azure"
     name = "Azure OpenAI"
@@ -127,5 +159,6 @@ class AzureOpenAIEmbeddingsProvider(BaseEmbeddingsProvider, AzureOpenAIEmbedding
     auth_strategy = EnvAuthStrategy(
         name="AZURE_OPENAI_API_KEY", keyword_param="openai_api_key"
     )
-
-    registry = True
+    fields = [
+        TextField(key="azure_endpoint", label="Base API URL (optional)", format="text"),
+    ]

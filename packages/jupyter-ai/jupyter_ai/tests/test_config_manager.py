@@ -12,7 +12,7 @@ from jupyter_ai.config_manager import (
 )
 from jupyter_ai.models import DescribeConfigResponse, GlobalConfig, UpdateConfigRequest
 from jupyter_ai_magics.utils import get_em_providers, get_lm_providers
-from langchain.pydantic_v1 import ValidationError
+from pydantic import ValidationError
 
 
 @pytest.fixture
@@ -23,6 +23,25 @@ def config_path(jp_data_dir):
 @pytest.fixture
 def schema_path(jp_data_dir):
     return str(jp_data_dir / "config_schema.json")
+
+
+@pytest.fixture
+def config_file_with_model_fields(jp_data_dir):
+    """
+    Fixture that creates a `config.json` file with the chat model set to
+    `openai-chat:gpt-4o` and fields for that model. Returns path to the file.
+    """
+    config_data = {
+        "model_provider_id:": "openai-chat:gpt-4o",
+        "embeddings_provider_id": None,
+        "api_keys": {"openai_api_key": "foobar"},
+        "send_with_shift_enter": False,
+        "fields": {"openai-chat:gpt-4o": {"openai_api_base": "https://example.com"}},
+    }
+    config_path = jp_data_dir / "config.json"
+    with open(config_path, "w") as file:
+        json.dump(config_data, file)
+    return str(config_path)
 
 
 @pytest.fixture
@@ -175,9 +194,48 @@ def configure_to_openai(cm: ConfigManager):
     return LM_GID, EM_GID, LM_LID, EM_LID, API_PARAMS
 
 
+def configure_with_fields(cm: ConfigManager, completions: bool = False):
+    """
+    Default behavior: Configures the ConfigManager with fields and API keys.
+    Returns the expected result of `cm.lm_provider_params`.
+
+    If `completions` is set to `True`, this configures the ConfigManager with
+    completion model fields, and returns the expected result of
+    `cm.completions_lm_provider_params`.
+    """
+    if completions:
+        req = UpdateConfigRequest(
+            completions_model_provider_id="openai-chat:gpt-4o",
+            api_keys={"OPENAI_API_KEY": "foobar"},
+            completions_fields={
+                "openai-chat:gpt-4o": {
+                    "openai_api_base": "https://example.com",
+                }
+            },
+        )
+    else:
+        req = UpdateConfigRequest(
+            model_provider_id="openai-chat:gpt-4o",
+            api_keys={"OPENAI_API_KEY": "foobar"},
+            fields={
+                "openai-chat:gpt-4o": {
+                    "openai_api_base": "https://example.com",
+                }
+            },
+        )
+    cm.update_config(req)
+    return {
+        "model_id": "gpt-4o",
+        "openai_api_key": "foobar",
+        "openai_api_base": "https://example.com",
+    }
+
+
 def test_snapshot_default_config(cm: ConfigManager, snapshot):
     config_from_cm: DescribeConfigResponse = cm.get_config()
-    assert config_from_cm == snapshot(exclude=lambda prop, path: prop == "last_read")
+    assert config_from_cm.model_dump() == snapshot(
+        exclude=lambda prop, path: prop == "last_read"
+    )
 
 
 def test_init_with_existing_config(cm: ConfigManager, common_cm_kwargs):
@@ -402,3 +460,90 @@ def test_handle_bad_provider_ids(cm_with_bad_provider_ids):
     config_desc = cm_with_bad_provider_ids.get_config()
     assert config_desc.model_provider_id is None
     assert config_desc.embeddings_provider_id is None
+
+
+def test_returns_chat_model_fields(cm):
+    """
+    Asserts that `ConfigManager.lm_provider_params` returns model fields set by
+    the user.
+    """
+    expected_model_args = configure_with_fields(cm)
+    assert cm.lm_provider_params == expected_model_args
+
+
+def test_returns_completion_model_fields(cm):
+    expected_model_args = configure_with_fields(cm, completions=True)
+    assert cm.completions_lm_provider_params == expected_model_args
+
+
+def test_config_manager_does_not_write_to_defaults(
+    config_file_with_model_fields, schema_path
+):
+    """
+    Asserts that `ConfigManager` does not write to the `defaults` argument when
+    the configured chat model differs from the one specified in `defaults`.
+    """
+    from copy import deepcopy
+
+    config_path = config_file_with_model_fields
+    log = logging.getLogger()
+    lm_providers = get_lm_providers()
+    em_providers = get_em_providers()
+
+    defaults = {
+        "model_provider_id": None,
+        "embeddings_provider_id": None,
+        "api_keys": {},
+        "fields": {},
+    }
+    expected_defaults = deepcopy(defaults)
+
+    cm = ConfigManager(
+        log=log,
+        lm_providers=lm_providers,
+        em_providers=em_providers,
+        config_path=config_path,
+        schema_path=schema_path,
+        defaults=defaults,
+    )
+
+    assert defaults == expected_defaults
+
+
+def test_config_manager_updates_schema(jp_data_dir, common_cm_kwargs):
+    """
+    Asserts that the ConfigManager adds new keys to the user's config schema
+    which are present in Jupyter AI's schema on init. Asserts that #1291 does
+    not occur again in the future.
+    """
+    schema_path = str(jp_data_dir / "config_schema.json")
+    with open(schema_path, "w") as file:
+        json.dump(
+            {
+                "title": "CUSTOM SCHEMA TITLE",
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "$comment": "Default values are sourced from `config_manager.py`.",
+                "type": "object",
+                "properties": {
+                    "custom_field": {
+                        "$comment": "Custom field added by some developer.",
+                        "type": ["string", "null"],
+                        "default": None,
+                        "readOnly": False,
+                    },
+                    # missing all other properties in config_schema.json
+                },
+            },
+            file,
+        )
+
+    cm_kwargs = {**common_cm_kwargs, "schema_path": schema_path}
+
+    cm = ConfigManager(**cm_kwargs)
+    with open(schema_path) as f:
+        new_schema = json.loads(f.read())
+        assert "custom_field" in new_schema["properties"]
+        assert "model_provider_id" in new_schema["properties"]
+        assert "fields" in new_schema["properties"]
+        assert "embeddings_fields" in new_schema["properties"]
+        assert "completions_fields" in new_schema["properties"]
