@@ -7,7 +7,7 @@ import re
 from typing import Any, Dict, List, Optional, Iterator
 from traitlets.config import Application
 
-from pydantic import Field, root_validator, model_validator
+from pydantic import Field, model_validator
 from langchain_core.utils import convert_to_secret_str, get_from_dict_or_env
 from langchain_core.callbacks.manager import CallbackManagerForLLMRun
 from langchain_core.language_models.chat_models import generate_from_stream
