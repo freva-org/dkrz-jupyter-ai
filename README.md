@@ -73,14 +73,14 @@ For more specific instructions for each model provider, refer to [the model prov
     conda env config vars set EVALUATION_SYSTEM_CONFIG_FILE=/work/ch1187/clint/freva-dev/freva/evaluation_system.conf -n freva-gpt
     mamba activate freva-gpt
     ```
-2. Install jupyter-ai, jupyter-ai-magics and jupyter-freva-gpt wheels within the `freva-gpt` environment:
+2. Install jupyter-ai-magics, jupyter-ai and jupyter-freva-gpt wheels within the `freva-gpt` environment:
     ```bash
-    # Install jupyter-ai wheel 
-    python -m pip install /work/ch1187/clint/freva-gpt/freva-jupyter-ai/packages/jupyter-ai/dist/jupyter_ai-2.28.3a4-py3-none-any.whl
     # Install jupyter-ai-magics wheel
-    python -m pip install /work/ch1187/clint/freva-gpt/freva-jupyter-ai/packages/jupyter-ai-magics/dist/jupyter_ai_magics-2.28.3a4-py3-none-any.whl
+    python -m pip install /work/ch1187/clint/freva-gpt/freva-jupyter-ai/packages/jupyter-ai-magics/dist/jupyter_ai_magics-2.31.2-py3-none-any.whl
+    # Install jupyter-ai wheel 
+    python -m pip install /work/ch1187/clint/freva-gpt/freva-jupyter-ai/packages/jupyter-ai/dist/jupyter_ai-2.31.2-py3-none-any.whl
     # Install jupyter-freva-gpt wheel
-    python -m pip install /work/ch1187/clint/freva-gpt/freva-jupyter-ai/packages/jupyter-freva-gpt/dist/jupyter_freva_gpt-0.1.2-py3-none-any.whl
+    python -m pip install /work/ch1187/clint/freva-gpt/freva-jupyter-ai/packages/jupyter-freva-gpt/dist/jupyter_freva_gpt-0.2.0-py3-none-any.whl
     ```
 3. Run a jupyter lab instance for testing:
     ```bash
