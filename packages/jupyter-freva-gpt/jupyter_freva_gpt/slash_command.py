@@ -21,7 +21,7 @@ class PingSlashCommand(BaseChatHandler):
     name = "Ping"
     help = "A command to get the chat backends capabilities"
     routing_type = SlashCommandRoutingType(slash_id="ping")
-    base_url = "https://freva.dkrz.de/api/chatbot/"
+    base_url = "https://nextgems.dkrz.de/api/chatbot/"
     client : Client = Client(host=base_url, timeout=5)
 
     uses_llm = False
@@ -56,7 +56,7 @@ class DocsSlashCommand(BaseChatHandler):
     name = "Docs"
     help = "A command that prints out some documentation on the backend"
     routing_type = SlashCommandRoutingType(slash_id="docs")
-    base_url = "https://freva.dkrz.de/api/chatbot/"
+    base_url = "https://nextgems.dkrz.de/api/chatbot/"
     client : Client = Client(host=base_url, timeout=5)
 
     uses_llm = False
