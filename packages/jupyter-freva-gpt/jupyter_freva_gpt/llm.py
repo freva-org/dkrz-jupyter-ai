@@ -23,7 +23,7 @@ class FrevaChat(BaseChatModel):
 
     model_id: str
     base_url:str = Field(default="https://nextgems.dkrz.de/api/chatbot")
-    user:str = Field(default=default_user)
+    user_id:str = Field(default=default_user)
     client_kwargs : Optional[Dict] = {}
     client: Client = Field(default=None)
     stop: str = Field(default="Generation complete")
@@ -141,7 +141,7 @@ class FrevaChat(BaseChatModel):
                 file=f"{Path(__file__).parent}/example_conversation.json") as fo:
                     stream=json.load(fo)
         else:
-            self.logger.debug(f"Sending request to /streamresponse with following params input={prompt}, chatbot={self.model_id}, thread_id={self.thread_id}, user={self.user}")
+            self.logger.debug(f"Sending request to /streamresponse with following params input={prompt}, chatbot={self.model_id}, thread_id={self.thread_id}, user={self.user_id}")
             stream=self.client.request(
                 method="GET", 
                 url="/streamresponse", 
@@ -149,7 +149,7 @@ class FrevaChat(BaseChatModel):
                 params={"input":prompt,  
                         "chatbot":self.model_id or None,
                         "thread_id":self.thread_id or None,
-                        "user": self.user or None}
+                        "user_id": self.user_id or None}
             )
         first_part=True
         code_started=False
