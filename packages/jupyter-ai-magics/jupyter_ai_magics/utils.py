@@ -36,10 +36,9 @@ def get_lm_providers(
             )
             continue
         except Exception as e:
-            log.error(
-                f"Unable to load model provider `{provider_ep.name}`. Printing full exception below."
+            log.warning(
+                f"Unable to load model provider `{provider_ep.name}`", exc_info=e
             )
-            log.exception(e)
             continue
 
         if not is_provider_allowed(provider.id, restrictions):
@@ -66,7 +65,7 @@ def get_em_providers(
         try:
             provider = model_provider_ep.load()
         except Exception as e:
-            log.error(
+            log.warning(
                 f"Unable to load embeddings model provider class from entry point `{model_provider_ep.name}`: %s.",
                 e,
             )
@@ -122,9 +121,9 @@ def get_em_provider(
 def is_provider_allowed(provider_id: str, restrictions: ProviderRestrictions) -> bool:
     allowed = restrictions["allowed_providers"]
     blocked = restrictions["blocked_providers"]
-    if blocked and provider_id in blocked:
+    if blocked is not None and provider_id in blocked:
         return False
-    if allowed and provider_id not in allowed:
+    if allowed is not None and provider_id not in allowed:
         return False
     return True
 

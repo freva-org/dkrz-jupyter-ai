@@ -107,7 +107,7 @@ class FrevaGPTProvider(BaseProvider, FrevaChat):
     """User inputs expected by this provider when initializing it. Each `Field` `f`
     should be passed in the constructor as a keyword argument, keyed by `f.key`."""
 
-    prompt_templates: Dict[str, PromptTemplate] = {
+    custom_prompt_templates: Dict[str, PromptTemplate] = {
         "code": PromptTemplate.from_template(
                 "{prompt}\n\nProduce output as source code only, "
                 "with no text or explanation before or after it. "
@@ -123,8 +123,8 @@ class FrevaGPTProvider(BaseProvider, FrevaChat):
     
     def get_prompt_template(self, format) -> PromptTemplate:
         # override parent class method to ensure custom prompt templates are used
-        if format in self.prompt_templates.keys():
-            return self.prompt_templates[format]
+        if format in self.custom_prompt_templates.keys():
+            return self.custom_prompt_templates[format]
         return super().get_prompt_template(format)
 
     def get_chat_prompt_template(self) -> PromptTemplate:

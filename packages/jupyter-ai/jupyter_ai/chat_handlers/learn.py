@@ -115,12 +115,18 @@ class LearnChatHandler(BaseChatHandler):
             if not embeddings:
                 return
 
-            self.index = FAISS.load_local(
-                INDEX_SAVE_DIR,
-                embeddings,
-                index_name=self.index_name,
-                allow_dangerous_deserialization=True,
-            )
+            index_path = os.path.join(INDEX_SAVE_DIR, self.index_name + ".faiss")
+            if os.path.exists(index_path):
+                self.index = FAISS.load_local(
+                    INDEX_SAVE_DIR,
+                    embeddings,
+                    index_name=self.index_name,
+                    allow_dangerous_deserialization=True,
+                )
+            else:
+                self.log.info(
+                    "No existing vector index found. You may create one using `/learn`."
+                )
             self.load_metadata()
         except Exception as e:
             self.log.error(
@@ -360,7 +366,7 @@ class LearnChatHandler(BaseChatHandler):
 
     def save_metadata(self):
         with open(METADATA_SAVE_PATH, "w") as f:
-            f.write(self.metadata.json())
+            f.write(self.metadata.model_dump_json())
 
     def load_metadata(self):
         if not os.path.exists(METADATA_SAVE_PATH):

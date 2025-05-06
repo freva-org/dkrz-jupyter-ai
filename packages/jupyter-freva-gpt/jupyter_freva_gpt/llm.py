@@ -7,10 +7,7 @@ import re
 from typing import Any, Dict, List, Optional, Iterator
 from traitlets.config import Application
 
-from langchain_core.pydantic_v1 import (
-    Field,
-    root_validator,
-)
+from pydantic import Field, model_validator
 from langchain_core.utils import convert_to_secret_str, get_from_dict_or_env
 from langchain_core.callbacks.manager import CallbackManagerForLLMRun
 from langchain_core.language_models.chat_models import generate_from_stream
@@ -26,13 +23,13 @@ class FrevaChat(BaseChatModel):
 
     model_id: str
     base_url:str = Field(default="https://nextgems.dkrz.de/api/chatbot")
-    user:str = Field(default=default_user)
+    user_id:str = Field(default=default_user)
     client_kwargs : Optional[Dict] = {}
-    _client: Client = Field(default=None)
+    client: Client = Field(default=None)
     stop: str = Field(default="Generation complete")
     thread_id: str = Field(default=None)
 
-    logger = Application.instance().log
+    logger: logging.Logger = Application.instance().log
 
     debug: bool = False
 
@@ -40,11 +37,10 @@ class FrevaChat(BaseChatModel):
     def _llm_type(self) -> str:
         return "Freva-GPT"
     
-    @root_validator(pre=False, skip_on_failure=True)
-    @classmethod
-    def _validate_env(cls, values:Dict) -> Dict:
-        values["_client"] = Client(host=values["base_url"], **values["client_kwargs"])
-        return values
+    @model_validator(mode="after")
+    def _validate_env(self) -> Dict:
+        self.client = Client(host=self.base_url, **self.client_kwargs)
+        return self
         
     def _reset(self) -> None:
         self.thread_id = None
@@ -145,15 +141,15 @@ class FrevaChat(BaseChatModel):
                 file=f"{Path(__file__).parent}/example_conversation.json") as fo:
                     stream=json.load(fo)
         else:
-            self.logger.debug(f"Sending request to /streamresponse with following params input={prompt}, chatbot={self.model_id}, thread_id={self.thread_id}, user={self.user}")
-            stream=self._client.request(
+            self.logger.debug(f"Sending request to /streamresponse with following params input={prompt}, chatbot={self.model_id}, thread_id={self.thread_id}, user={self.user_id}")
+            stream=self.client.request(
                 method="GET", 
                 url="/streamresponse", 
                 stream=True, 
                 params={"input":prompt,  
                         "chatbot":self.model_id or None,
                         "thread_id":self.thread_id or None,
-                        "user": self.user or None}
+                        "user_id": self.user_id or None}
             )
         first_part=True
         code_started=False

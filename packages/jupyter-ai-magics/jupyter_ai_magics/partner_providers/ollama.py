@@ -1,7 +1,7 @@
 from langchain_ollama import ChatOllama, OllamaEmbeddings
 
 from ..embedding_providers import BaseEmbeddingsProvider
-from ..providers import BaseProvider, EnvAuthStrategy, TextField
+from ..providers import BaseProvider, TextField
 
 
 class OllamaProvider(BaseProvider, ChatOllama):
@@ -23,10 +23,13 @@ class OllamaEmbeddingsProvider(BaseEmbeddingsProvider, OllamaEmbeddings):
     id = "ollama"
     name = "Ollama"
     # source: https://ollama.com/library
-    models = [
-        "nomic-embed-text",
-        "mxbai-embed-large",
-        "all-minilm",
-        "snowflake-arctic-embed",
-    ]
     model_id_key = "model"
+    help = (
+        "See [https://ollama.com/search?c=embedding](https://ollama.com/search?c=embedding) for a list of models. "
+        "Pass an embedding model's name; for example, `mxbai-embed-large`."
+    )
+    models = ["*"]
+    registry = True
+    fields = [
+        TextField(key="base_url", label="Base API URL (optional)", format="text"),
+    ]
