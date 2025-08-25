@@ -172,9 +172,20 @@ export function ChatSettings(props: ChatSettingsProps): JSX.Element {
         }
       });
     }
+    if (lmAuth?.type === 'freva' &&
+      !server.config.api_keys.includes(lmAuth.name)
+    ) {
+      newApiKeys[lmAuth.name] = '';
+    }
 
     if (
       emAuth?.type === 'env' &&
+      !server.config.api_keys.includes(emAuth.name)
+    ) {
+      newApiKeys[emAuth.name] = '';
+    }
+    if (
+      emAuth?.type === 'freva' &&
       !server.config.api_keys.includes(emAuth.name)
     ) {
       newApiKeys[emAuth.name] = '';

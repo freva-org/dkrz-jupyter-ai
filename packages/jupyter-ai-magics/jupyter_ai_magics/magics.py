@@ -235,6 +235,10 @@ class AiMagics(Magics):
             env_status_ok = all(var_name in os.environ for var_name in var_names)
             not_set_title = MULTIENV_NOT_SET
             set_title = MULTIENV_SET
+        elif auth_strategy.type == "freva":
+            var_name = auth_strategy.name
+            env_var_display = f"`{var_name}`"
+            env_status_ok = var_name is os.environ
         else:  # No environment variables
             return na_message
 
@@ -250,14 +254,14 @@ class AiMagics(Magics):
         # only handle providers with "env" or "multienv" auth strategy
         auth_strategy = getattr(self.providers[provider_id], "auth_strategy", None)
         if not auth_strategy or (
-            auth_strategy.type != "env" and auth_strategy.type != "multienv"
+            auth_strategy.type != "env" and auth_strategy.type != "multienv" and auth_strategy.type != "freva"
         ):
             return ""
 
-        prefix = ENV_REQUIRES if auth_strategy.type == "env" else MULTIENV_REQUIRES
+        prefix = ENV_REQUIRES if auth_strategy.type in ("env", "freva") else MULTIENV_REQUIRES
         envvars = (
             [auth_strategy.name]
-            if auth_strategy.type == "env"
+            if auth_strategy.type in ("env", "freva")
             else auth_strategy.names[:]
         )
 
@@ -546,7 +550,7 @@ class AiMagics(Magics):
         # validate presence of authn credentials
         auth_strategy = self.providers[provider_id].auth_strategy
         if auth_strategy:
-            if auth_strategy.type == "env" and auth_strategy.name not in os.environ:
+            if auth_strategy.type in ("env", "freva") and auth_strategy.name not in os.environ:
                 raise OSError(
                     f"Authentication environment variable {auth_strategy.name} is not set.\n"
                     f"An authentication token is required to use models from the {Provider.name} provider.\n"

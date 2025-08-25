@@ -135,12 +135,19 @@ class AwsAuthStrategy(BaseModel):
 
     type: Literal["aws"] = "aws"
 
+class FrevaAuthStrategy(BaseModel):
+    """Requires Freva Authentication via the freva-client library"""
+    type: Literal["freva"] = "freva"
+    name: str
+    keyword_param: Optional[str] = None
+
 
 AuthStrategy = Optional[
     Union[
         EnvAuthStrategy,
         MultiEnvAuthStrategy,
         AwsAuthStrategy,
+        FrevaAuthStrategy,
     ]
 ]
 

@@ -234,6 +234,11 @@ export namespace AiService {
     name: string;
   };
 
+  export type FrevaAuthStrategy = {
+    type: 'freva';
+    name: string;
+  };
+
   export type AwsAuthStrategy = {
     type: 'aws';
   };
@@ -246,6 +251,7 @@ export namespace AiService {
   export type AuthStrategy =
     | AwsAuthStrategy
     | EnvAuthStrategy
+    | FrevaAuthStrategy
     | MultiEnvAuthStrategy
     | null;
 

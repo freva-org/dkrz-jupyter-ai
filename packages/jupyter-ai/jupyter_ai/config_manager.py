@@ -63,7 +63,7 @@ class BlockedModelError(Exception):
 
 def _validate_provider_authn(config: GlobalConfig, provider: Type[AnyProvider]):
     # TODO: handle non-env auth strategies
-    if not provider.auth_strategy or provider.auth_strategy.type != "env":
+    if not provider.auth_strategy or provider.auth_strategy.type not in ("env", "freva"):
         return
 
     if provider.auth_strategy.name not in config.api_keys:
@@ -456,7 +456,7 @@ class ConfigManager(Configurable):
             if (
                 provider
                 and provider.auth_strategy
-                and provider.auth_strategy.type == "env"
+                and provider.auth_strategy.type in ("env", "freva")
             ):
                 required_keys.append(provider.auth_strategy.name)
 
@@ -574,6 +574,14 @@ class ConfigManager(Configurable):
         )
         authn_fields = {}
         if Provider.auth_strategy and Provider.auth_strategy.type == "env":
+            keyword_param = (
+                Provider.auth_strategy.keyword_param
+                or Provider.auth_strategy.name.lower()
+            )
+            key_name = Provider.auth_strategy.name
+            authn_fields[keyword_param] = config.api_keys[key_name]
+        
+        elif Provider.auth_strategy and Provider.auth_strategy.type == "freva":
             keyword_param = (
                 Provider.auth_strategy.keyword_param
                 or Provider.auth_strategy.name.lower()

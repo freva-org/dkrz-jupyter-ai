@@ -1,7 +1,7 @@
 from typing import ClassVar, List, Dict
 
 from jupyter_ai import BaseProvider, Field, Persona
-from jupyter_ai_magics.providers import CHAT_SYSTEM_PROMPT, HUMAN_MESSAGE_TEMPLATE
+from jupyter_ai_magics.providers import CHAT_SYSTEM_PROMPT, HUMAN_MESSAGE_TEMPLATE, FrevaAuthStrategy
 from langchain.prompts import (
     ChatPromptTemplate,
     HumanMessagePromptTemplate,
@@ -67,6 +67,8 @@ class FrevaGPTProvider(BaseProvider, FrevaChat):
     models: ClassVar[List[str]] = [available_backends[0]] if force_default else available_backends
     """List of supported models by their IDs. For registry providers, this will
     be just ["*"]."""
+
+    auth_strategy = FrevaAuthStrategy(type="freva", name="FREVA_AUTH_KEY", keyword_param="freva_auth_key_param")
 
     help: ClassVar[str] = None
     """Text to display in lieu of a model list for a registry provider that does
