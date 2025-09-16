@@ -251,8 +251,8 @@ export namespace AiService {
   export type AuthStrategy =
     | AwsAuthStrategy
     | EnvAuthStrategy
-    | FrevaAuthStrategy
     | MultiEnvAuthStrategy
+    | FrevaAuthStrategy
     | null;
 
   export type TextField = {

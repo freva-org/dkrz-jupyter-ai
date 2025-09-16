@@ -1,12 +1,11 @@
 import json
 import logging
 import os
-import shutil
 import time
 from copy import deepcopy
-from typing import List, Optional, Type, Union
+from typing import Optional, Union, Type
 
-from deepmerge import always_merger as Merger
+from deepmerge import Merger, always_merger
 from jsonschema import Draft202012Validator as Validator
 from jupyter_ai.models import DescribeConfigResponse, GlobalConfig, UpdateConfigRequest
 from jupyter_ai_magics import JupyternautPersona, Persona
@@ -67,10 +66,17 @@ def _validate_provider_authn(config: GlobalConfig, provider: Type[AnyProvider]):
         return
 
     if provider.auth_strategy.name not in config.api_keys:
+        print("api_keys", config.api_keys)
         raise AuthError(
             f"Missing API key for '{provider.auth_strategy.name}' in the config."
         )
-
+    
+    if provider.auth_strategy and provider.auth_strategy.type == "multienv":
+        for name in provider.auth_strategy.names:
+            if name not in config.api_keys:
+                raise AuthError(
+                    f"Missing API key for '{name}' in the config."
+                )
 
 class ConfigManager(Configurable):
     """Provides model and embedding provider id along
@@ -108,10 +114,10 @@ class ConfigManager(Configurable):
         lm_providers: LmProvidersDict,
         em_providers: EmProvidersDict,
         defaults: dict,
-        allowed_providers: Optional[List[str]] = None,
-        blocked_providers: Optional[List[str]] = None,
-        allowed_models: Optional[List[str]] = None,
-        blocked_models: Optional[List[str]] = None,
+        allowed_providers: Optional[list[str]] = None,
+        blocked_providers: Optional[list[str]] = None,
+        allowed_models: Optional[list[str]] = None,
+        blocked_models: Optional[list[str]] = None,
         *args,
         **kwargs,
     ):
@@ -178,11 +184,23 @@ class ConfigManager(Configurable):
         with open(OUR_SCHEMA_PATH, encoding="utf-8") as f:
             default_schema = json.load(f)
 
+        # Create a custom `deepmerge.Merger` object to merge lists using the
+        # 'append_unique' strategy.
+        #
+        # This stops type union declarations like `["string", "null"]` from
+        # growing into `["string", "null", "string", "null"]` on restart.
+        # This fixes issue #1320.
+        merger = Merger(
+            [(list, ["append_unique"]), (dict, ["merge"]), (set, ["union"])],
+            ["override"],
+            ["override"],
+        )
+
         # merge existing_schema into default_schema
         # specifying existing_schema as the second argument ensures that
         # existing_schema always overrides existing keys in default_schema, i.e.
         # this call only adds new keys in default_schema.
-        schema = Merger.merge(default_schema, existing_schema)
+        schema = merger.merge(default_schema, existing_schema)
         with open(self.schema_path, encoding="utf-8", mode="w") as f:
             json.dump(schema, f, indent=self.indentation_depth)
 
@@ -194,7 +212,11 @@ class ConfigManager(Configurable):
 
     def _init_config(self):
         default_config = self._init_defaults()
-        if os.path.exists(self.config_path):
+        # if the config file exists, read from it and use our defaults to fill
+        # out any missing fields. otherwise, create a new config file from our
+        # defaults.
+        # the `st_size` check treats empty 0-byte config files as non-existent.
+        if os.path.exists(self.config_path) and os.stat(self.config_path).st_size != 0:
             self._process_existing_config(default_config)
         else:
             self._create_default_config(default_config)
@@ -202,7 +224,9 @@ class ConfigManager(Configurable):
     def _process_existing_config(self, default_config):
         with open(self.config_path, encoding="utf-8") as f:
             existing_config = json.loads(f.read())
-            merged_config = Merger.merge(
+            if "embeddings_fields" not in existing_config:
+                existing_config["embeddings_fields"] = {}
+            merged_config = always_merger.merge(
                 default_config,
                 {k: v for k, v in existing_config.items() if v is not None},
             )
@@ -305,6 +329,8 @@ class ConfigManager(Configurable):
         with open(self.config_path, encoding="utf-8") as f:
             self._last_read = time.time_ns()
             raw_config = json.loads(f.read())
+            if "embeddings_fields" not in raw_config:
+                raw_config["embeddings_fields"] = {}
             config = GlobalConfig(**raw_config)
             self._validate_config(config)
             return config
@@ -459,6 +485,13 @@ class ConfigManager(Configurable):
                 and provider.auth_strategy.type in ("env", "freva")
             ):
                 required_keys.append(provider.auth_strategy.name)
+            elif (
+                provider
+                and provider.auth_strategy
+                and provider.auth_strategy=="multienv"
+            ):
+                for name in provider.auth_strategy.names:
+                    required_keys.append(name)
 
         if key_name in required_keys:
             raise KeyInUseError(
@@ -481,7 +514,7 @@ class ConfigManager(Configurable):
                     raise KeyEmptyError("API key value cannot be empty.")
 
         config_dict = self._read_config().model_dump()
-        Merger.merge(config_dict, config_update.model_dump(exclude_unset=True))
+        always_merger.merge(config_dict, config_update.model_dump(exclude_unset=True))
         self._write_config(GlobalConfig(**config_dict))
 
     # this cannot be a property, as the parent Configurable already defines the
@@ -588,6 +621,12 @@ class ConfigManager(Configurable):
             )
             key_name = Provider.auth_strategy.name
             authn_fields[keyword_param] = config.api_keys[key_name]
+
+        elif Provider.auth_strategy and Provider.auth_strategy.type == "multienv":
+            for name, keyword_param in zip(Provider.auth_strategy.names, Provider.auth_strategy.keyword_params):
+                keyword_params = keyword_param or name.lower()
+                key_name = name
+                authn_fields[keyword_params] = config.api_keys[key_name]
 
         return {
             "model_id": model_id,

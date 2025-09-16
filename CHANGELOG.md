@@ -2,6 +2,84 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 2.31.6
+
+([Full Changelog](https://github.com/jupyterlab/jupyter-ai/compare/@jupyter-ai/core@2.31.5...0fad182d794c28f50dc58efda30098e53d263315))
+
+### Enhancements made
+
+- Add VertexAI model provider [#1417](https://github.com/jupyterlab/jupyter-ai/pull/1417) ([@anthonyhungnguyen](https://github.com/anthonyhungnguyen))
+- Refresh the list of supported Gemini models. [#1381](https://github.com/jupyterlab/jupyter-ai/pull/1381) ([@haofan](https://github.com/haofan))
+
+### Maintenance and upkeep improvements
+
+### Documentation improvements
+
+- Updated documentation for using Ollama with cell magics on non-default port [#1370](https://github.com/jupyterlab/jupyter-ai/pull/1370) ([@srdas](https://github.com/srdas))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyterlab/jupyter-ai/graphs/contributors?from=2025-06-04&to=2025-07-25&type=c))
+
+[@dlqqq](https://github.com/search?q=repo%3Ajupyterlab%2Fjupyter-ai+involves%3Adlqqq+updated%3A2025-06-04..2025-07-25&type=Issues) | [@ellisonbg](https://github.com/search?q=repo%3Ajupyterlab%2Fjupyter-ai+involves%3Aellisonbg+updated%3A2025-06-04..2025-07-25&type=Issues) | [@meeseeksmachine](https://github.com/search?q=repo%3Ajupyterlab%2Fjupyter-ai+involves%3Ameeseeksmachine+updated%3A2025-06-04..2025-07-25&type=Issues)
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
+## 2.31.5
+
+([Full Changelog](https://github.com/jupyterlab/jupyter-ai/compare/@jupyter-ai/core@2.31.4...d563c38061a0263876cb0d74fd2571072ac15f45))
+
+### Enhancements made
+
+- Separate `BaseProvider` for faster import [#1338](https://github.com/jupyterlab/jupyter-ai/pull/1338) ([@krassowski](https://github.com/krassowski))
+
+### Bugs fixed
+
+- Fix the path missing in inline completion request when there is no kernel [#1361](https://github.com/jupyterlab/jupyter-ai/pull/1361) ([@krassowski](https://github.com/krassowski))
+- Added a local identity provider. [#1333](https://github.com/jupyterlab/jupyter-ai/pull/1333) ([@3coins](https://github.com/3coins))
+
+### Maintenance and upkeep improvements
+
+- Add `pyupgrade --py39-plus` and `autoflake` to `pre-commit` config [#1329](https://github.com/jupyterlab/jupyter-ai/pull/1329) ([@rominf](https://github.com/rominf))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyterlab/jupyter-ai/graphs/contributors?from=2025-04-24&to=2025-06-04&type=c))
+
+[@dlqqq](https://github.com/search?q=repo%3Ajupyterlab%2Fjupyter-ai+involves%3Adlqqq+updated%3A2025-04-24..2025-06-04&type=Issues) | [@krassowski](https://github.com/search?q=repo%3Ajupyterlab%2Fjupyter-ai+involves%3Akrassowski+updated%3A2025-04-24..2025-06-04&type=Issues) | [@meeseeksmachine](https://github.com/search?q=repo%3Ajupyterlab%2Fjupyter-ai+involves%3Ameeseeksmachine+updated%3A2025-04-24..2025-06-04&type=Issues)
+
+## 2.31.4
+
+([Full Changelog](https://github.com/jupyterlab/jupyter-ai/compare/@jupyter-ai/core@2.31.3...179a7c7b404df873207811aa31fef15e14cbeeb9))
+
+### Bugs fixed
+
+- Handle missing field in config.json on version upgrade [#1330](https://github.com/jupyterlab/jupyter-ai/pull/1330) ([@srdas](https://github.com/srdas))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyterlab/jupyter-ai/graphs/contributors?from=2025-04-15&to=2025-04-24&type=c))
+
+[@meeseeksmachine](https://github.com/search?q=repo%3Ajupyterlab%2Fjupyter-ai+involves%3Ameeseeksmachine+updated%3A2025-04-15..2025-04-24&type=Issues)
+
+## 2.31.3
+
+([Full Changelog](https://github.com/jupyterlab/jupyter-ai/compare/@jupyter-ai/core@2.31.2...42ff451442ddbca940457d00b9981c7d5f5dc904))
+
+### Bugs fixed
+
+- [2.x] Expand edge case handling in ConfigManager [#1321](https://github.com/jupyterlab/jupyter-ai/pull/1321) ([@dlqqq](https://github.com/dlqqq))
+
+### Documentation improvements
+
+- Update documentation to show usage with OpenRouter API and URL [#1318](https://github.com/jupyterlab/jupyter-ai/pull/1318) ([@srdas](https://github.com/srdas))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyterlab/jupyter-ai/graphs/contributors?from=2025-04-03&to=2025-04-15&type=c))
+
+[@dlqqq](https://github.com/search?q=repo%3Ajupyterlab%2Fjupyter-ai+involves%3Adlqqq+updated%3A2025-04-03..2025-04-15&type=Issues) | [@ellisonbg](https://github.com/search?q=repo%3Ajupyterlab%2Fjupyter-ai+involves%3Aellisonbg+updated%3A2025-04-03..2025-04-15&type=Issues) | [@krassowski](https://github.com/search?q=repo%3Ajupyterlab%2Fjupyter-ai+involves%3Akrassowski+updated%3A2025-04-03..2025-04-15&type=Issues) | [@meeseeksmachine](https://github.com/search?q=repo%3Ajupyterlab%2Fjupyter-ai+involves%3Ameeseeksmachine+updated%3A2025-04-03..2025-04-15&type=Issues)
+
 ## 2.31.2
 
 ([Full Changelog](https://github.com/jupyterlab/jupyter-ai/compare/@jupyter-ai/core@2.31.1...5709d6e1fbc3dd8e82ba9bb04d86ee8e7ce11211))
@@ -16,8 +94,6 @@
 ([GitHub contributors page for this release](https://github.com/jupyterlab/jupyter-ai/graphs/contributors?from=2025-03-26&to=2025-04-03&type=c))
 
 [@meeseeksmachine](https://github.com/search?q=repo%3Ajupyterlab%2Fjupyter-ai+involves%3Ameeseeksmachine+updated%3A2025-03-26..2025-04-03&type=Issues) | [@srdas](https://github.com/search?q=repo%3Ajupyterlab%2Fjupyter-ai+involves%3Asrdas+updated%3A2025-03-26..2025-04-03&type=Issues)
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 2.31.1
 
