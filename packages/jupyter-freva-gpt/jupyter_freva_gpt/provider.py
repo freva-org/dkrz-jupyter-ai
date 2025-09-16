@@ -1,7 +1,7 @@
 from typing import ClassVar, List, Dict
 
-from jupyter_ai import BaseProvider, Field, Persona
-from jupyter_ai_magics.providers import CHAT_SYSTEM_PROMPT, HUMAN_MESSAGE_TEMPLATE, FrevaAuthStrategy
+from jupyter_ai_magics import BaseProvider, Persona
+from jupyter_ai_magics.providers import CHAT_SYSTEM_PROMPT, HUMAN_MESSAGE_TEMPLATE, Field, TextField, MultilineTextField
 from langchain.prompts import (
     ChatPromptTemplate,
     HumanMessagePromptTemplate,
@@ -68,7 +68,12 @@ class FrevaGPTProvider(BaseProvider, FrevaChat):
     """List of supported models by their IDs. For registry providers, this will
     be just ["*"]."""
 
-    auth_strategy = FrevaAuthStrategy(type="freva", name="FREVA_AUTH_KEY", keyword_param="freva_auth_key_param")
+    fields: ClassVar[List[Field]] = [
+        TextField(key="freva_token_file", label="Freva API Token file (will be created if it doesn't exist)", format="text"),
+        MultilineTextField(key="freva_token_json", label="JSON-encoded Freva API Token", format="json")
+        ]
+    """User inputs expected by this provider when initializing it. Each `Field` `f`
+    should be passed in the constructor as a keyword argument, keyed by `f.key`."""
 
     help: ClassVar[str] = None
     """Text to display in lieu of a model list for a registry provider that does
@@ -104,10 +109,6 @@ class FrevaGPTProvider(BaseProvider, FrevaChat):
 
     registry: ClassVar[bool] = False
     """Whether this provider is a registry provider."""
-
-    fields: ClassVar[List[Field]] = []
-    """User inputs expected by this provider when initializing it. Each `Field` `f`
-    should be passed in the constructor as a keyword argument, keyed by `f.key`."""
 
     custom_prompt_templates: Dict[str, PromptTemplate] = {
         "code": PromptTemplate.from_template(

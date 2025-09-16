@@ -12,7 +12,7 @@ from importlib import metadata
 from json.decoder import JSONDecodeError
 
 try:
-  __version__ = metadata.version('freva-gpt')
+  __version__ = metadata.version('jupyter_freva_gpt')
 except metadata.PackageNotFoundError:
   __version__ = '0.0.0'
 

@@ -2,18 +2,23 @@
 import json
 import logging
 import os
-from pathlib import Path
+import tempfile
 import re
+from datetime import datetime
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Iterator
 from traitlets.config import Application
 
-from pydantic import Field, model_validator
+from pydantic import Field, model_validator, SecretStr
 from langchain_core.utils import convert_to_secret_str, get_from_dict_or_env
 from langchain_core.callbacks.manager import CallbackManagerForLLMRun
 from langchain_core.language_models.chat_models import generate_from_stream
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import BaseMessage, ChatMessageChunk, ChatMessage, AIMessage, AIMessageChunk
 from langchain_core.outputs import ChatGenerationChunk, ChatGeneration, ChatResult
+from langchain_core.utils import secret_from_env
+
+import freva_client
 
 from ._client import Client
 from ._types import Message, BasePrompt
@@ -28,18 +33,91 @@ class FrevaChat(BaseChatModel):
     client: Client = Field(default=None)
     stop: str = Field(default="Generation complete")
     thread_id: str = Field(default=None)
-
+    freva_token_file: str = Field(default=None)
+    freva_token_dict: dict = Field(default=None)
+    freva_auth_token: SecretStr = Field(default=None)
     logger: logging.Logger = Application.instance().log
-
     debug: bool = False
 
     @property
     def _llm_type(self) -> str:
         return "Freva-GPT"
     
+    @classmethod
+    def _update_token_file(cls, values:dict) -> dict:
+        freva_token_file = values["freva_token_file"]
+        freva_token_dict = values["freva_token_dict"]
+        with open(freva_token_file, mode='r') as fr:
+            freva_file_dict = json.load(fr)
+        file_expires_at = datetime.fromtimestamp(freva_file_dict["expires"])
+        dict_expires_at = datetime.fromtimestamp(freva_token_dict["expires"])
+        if file_expires_at > dict_expires_at:
+            values["freva_token_dict"] = freva_file_dict
+        elif dict_expires_at > file_expires_at:
+            with open(freva_token_file, mode="w") as fw:
+                json.dump(freva_file_dict)
+        return values
+    
+    @model_validator(mode="before")
+    def _validate_secrets(cls, values: Any) -> Any:
+        values["freva_token_file"] = get_from_dict_or_env(
+            values,
+            key="freva_token_file",
+            env_key="FREVA_TOKEN_FILE",
+            default=None
+        ).strip('\"')
+        values["freva_token_json"] = values["freva_token_json"] if "freva_token_json" in values.keys() else None
+        if values["freva_token_file"] and os.path.exists(values["freva_token_file"]) and not values["freva_token_json"]:
+            with open(values["freva_token_file"], mode="r") as fr:
+                values["freva_token_dict"] = json.load(fr)
+            values["freva_token_json"] = json.dumps(values["freva_token_dict"])
+        elif values["freva_token_file"] and not os.path.exists(values["freva_token_file"]) and values["freva_token_json"]:
+            values["freva_token_dict"] = json.loads(values["freva_token_json"])
+            with open(values["freva_token_file"], mode="w") as fw:
+                json.dump(values["freva_token_dict"], fw)
+        elif values["freva_token_file"] and os.path.exists(values["freva_token_file"]) and values["freva_token_json"]:
+            values["freva_token_dict"] = json.loads(values["freva_token_json"])
+        values = cls._update_token_file(values)
+        values["freva_auth_token"] = values["freva_token_dict"]["access_token"]
+        return values
+    
     @model_validator(mode="after")
     def _validate_env(self) -> Dict:
+        self.client_kwargs = {
+            "headers": {
+                "Authorization": f"Bearer {self.freva_auth_token.get_secret_value()}"
+            }
+        }
         self.client = Client(host=self.base_url, **self.client_kwargs)
+        try:
+            response = self.client.request(
+                method="GET", 
+                url="/getthread", 
+                stream=False, 
+                params={
+                    "thread_id": self.thread_id or None,
+                    "user_id": self.user_id or None,  
+                },
+            ) 
+        except ConnectionError as e:
+            if e.errno == 401:
+                try:
+                    _, tmp_file_name = tempfile.mkstemp(suffix=".json", prefix="freva_token")
+                    with open(file=tmp_file_name, mode="w") as tmp:
+                        json.dump(
+                            self.freva_token_dict,
+                            tmp
+                        )
+                    Auth = freva_client.auth.Auth(token_file=tmp_file_name or None)
+                    self.freva_token_dict=Auth.authenticate(
+                        host=self.base_url,
+                        _auto=True,
+                    )
+                    self.freva_auth_token = convert_to_secret_str(self.freva_token_dict["access_token"])
+                except:
+                    raise 
+                finally:
+                    os.remove(tmp_file_name)
         return self
         
     def _reset(self) -> None:
@@ -146,10 +224,15 @@ class FrevaChat(BaseChatModel):
                 method="GET", 
                 url="/streamresponse", 
                 stream=True, 
-                params={"input":prompt,  
-                        "chatbot":self.model_id or None,
-                        "thread_id":self.thread_id or None,
-                        "user_id": self.user_id or None}
+                params={
+                    "input":prompt,  
+                    "chatbot":self.model_id or None,
+                    "thread_id":self.thread_id or None,
+                    "user_id": self.user_id or None,
+                },
+                headers = {
+                    "Authorization": f"Bearer {self.freva_auth_token.get_secret_value() if self.freva_auth_token else None}"
+                }
             )
         first_part=True
         code_started=False
