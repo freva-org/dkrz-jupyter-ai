@@ -20,12 +20,12 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
 ]
-version = "0.2.0"
+version = "0.3.1"
 description = "A Jupyter AI extension for FrevaGPT."
 authors = [
     { name = "Felix Oertel", email = "oertel@dkrz.de" },
 ]
-dependencies = ["jupyter_ai"]
+dependencies = ["freva-client>=2506.0.1"]
 
 [project.optional-dependencies]
 test = ["coverage", "pytest", "pytest-asyncio", "pytest-cov"]

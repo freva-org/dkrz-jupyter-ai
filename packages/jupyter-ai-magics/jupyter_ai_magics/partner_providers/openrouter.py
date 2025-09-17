@@ -1,14 +1,12 @@
-from typing import Dict
-
 from jupyter_ai_magics import BaseProvider
-from jupyter_ai_magics.providers import EnvAuthStrategy, TextField
+from jupyter_ai_magics.base_provider import EnvAuthStrategy, TextField
 from langchain_core.utils import get_from_dict_or_env
 from langchain_openai import ChatOpenAI
 
 
 class ChatOpenRouter(ChatOpenAI):
     @property
-    def lc_secrets(self) -> Dict[str, str]:
+    def lc_secrets(self) -> dict[str, str]:
         return {"openai_api_key": "OPENROUTER_API_KEY"}
 
 

@@ -1,7 +1,7 @@
 import json
 import logging
 import os
-from unittest.mock import mock_open, patch
+from pathlib import Path
 
 import pytest
 from jupyter_ai.config_manager import (
@@ -73,9 +73,9 @@ def common_cm_kwargs(config_path, schema_path):
 @pytest.fixture
 def cm_kargs_with_defaults(config_path, schema_path, common_cm_kwargs):
     """Kwargs that are commonly used when initializing the CM."""
-    log = logging.getLogger()
-    lm_providers = get_lm_providers()
-    em_providers = get_em_providers()
+    logging.getLogger()
+    get_lm_providers()
+    get_em_providers()
     return {
         **common_cm_kwargs,
         "defaults": {
@@ -307,9 +307,9 @@ def test_init_with_default_values(
 
     del cm_with_defaults
 
-    log = logging.getLogger()
-    lm_providers = get_lm_providers()
-    em_providers = get_em_providers()
+    logging.getLogger()
+    get_lm_providers()
+    get_em_providers()
     kwargs = {
         **common_cm_kwargs,
         "defaults": {"model_provider_id": "bedrock-chat:anthropic.claude-v2"},
@@ -513,8 +513,8 @@ def test_config_manager_does_not_write_to_defaults(
 def test_config_manager_updates_schema(jp_data_dir, common_cm_kwargs):
     """
     Asserts that the ConfigManager adds new keys to the user's config schema
-    which are present in Jupyter AI's schema on init. Asserts that #1291 does
-    not occur again in the future.
+    which are present in Jupyter AI's schema on init. Asserts that the main
+    issue reported in #1291 does not occur again in the future.
     """
     schema_path = str(jp_data_dir / "config_schema.json")
     with open(schema_path, "w") as file:
@@ -539,7 +539,7 @@ def test_config_manager_updates_schema(jp_data_dir, common_cm_kwargs):
 
     cm_kwargs = {**common_cm_kwargs, "schema_path": schema_path}
 
-    cm = ConfigManager(**cm_kwargs)
+    ConfigManager(**cm_kwargs)
     with open(schema_path) as f:
         new_schema = json.loads(f.read())
         assert "custom_field" in new_schema["properties"]
@@ -547,3 +547,17 @@ def test_config_manager_updates_schema(jp_data_dir, common_cm_kwargs):
         assert "fields" in new_schema["properties"]
         assert "embeddings_fields" in new_schema["properties"]
         assert "completions_fields" in new_schema["properties"]
+
+
+def test_config_manager_handles_empty_touched_file(common_cm_kwargs):
+    """
+    Asserts that ConfigManager does not fail at runtime if `config.json` is a
+    "touched file", a completely empty file with 0 bytes. This may happen if a
+    user / build system runs `touch config.json` by accident.
+
+    Asserts that the second issue reported in #1291 does not occur again in the
+    future.
+    """
+    config_path = common_cm_kwargs["config_path"]
+    Path(config_path).touch()
+    ConfigManager(**common_cm_kwargs)
