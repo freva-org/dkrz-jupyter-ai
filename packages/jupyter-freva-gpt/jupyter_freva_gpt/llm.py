@@ -76,7 +76,7 @@ class FrevaChat(BaseChatModel):
             with open(values["freva_token_file"], mode="w") as fw:
                 json.dump(values["freva_token_dict"], fw)
         elif not os.path.exists(values["freva_token_file"]) and not values["freva_token_json"]:
-            raise ValueError(f"Neither the Freva token file {values["freva_token_file"]} nor the Freva Token JSON-String could be found.")
+            raise ValueError(f"Neither the Freva token file {values['freva_token_file']} nor the Freva Token JSON-String could be found.")
         values["freva_token_dict"] = json.loads(values["freva_token_json"])
         values = cls._update_token_file(values)
         values["freva_auth_token"] = values["freva_token_dict"]["access_token"]
