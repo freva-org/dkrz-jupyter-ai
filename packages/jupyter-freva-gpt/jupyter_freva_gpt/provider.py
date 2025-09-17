@@ -69,7 +69,6 @@ class FrevaGPTProvider(BaseProvider, FrevaChat):
     be just ["*"]."""
 
     fields: ClassVar[List[Field]] = [
-        TextField(key="freva_token_file", label="Freva API Token file (will be created if it doesn't exist)", format="text"),
         MultilineTextField(key="freva_token_json", label="JSON-encoded Freva API Token", format="json")
         ]
     """User inputs expected by this provider when initializing it. Each `Field` `f`
