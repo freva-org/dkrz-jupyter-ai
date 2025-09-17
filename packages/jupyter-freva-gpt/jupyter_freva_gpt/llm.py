@@ -10,13 +10,12 @@ from typing import Any, Dict, List, Optional, Iterator
 from traitlets.config import Application
 
 from pydantic import Field, model_validator, SecretStr
-from langchain_core.utils import convert_to_secret_str, get_from_dict_or_env
+from langchain_core.utils import convert_to_secret_str, get_from_env
 from langchain_core.callbacks.manager import CallbackManagerForLLMRun
 from langchain_core.language_models.chat_models import generate_from_stream
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import BaseMessage, ChatMessageChunk, ChatMessage, AIMessage, AIMessageChunk
 from langchain_core.outputs import ChatGenerationChunk, ChatGeneration, ChatResult
-from langchain_core.utils import secret_from_env
 
 import freva_client
 
@@ -27,7 +26,7 @@ default_user = os.environ["USER"] if "USER" in os.environ.keys() else "test-user
 class FrevaChat(BaseChatModel):
 
     model_id: str
-    base_url:str = Field(default="https://nextgems.dkrz.de/api/chatbot")
+    base_url:str = Field(default="https://nextgems.dkrz.de")
     user_id:str = Field(default=default_user)
     client_kwargs : Optional[Dict] = {}
     client: Client = Field(default=None)
@@ -55,28 +54,30 @@ class FrevaChat(BaseChatModel):
             values["freva_token_dict"] = freva_file_dict
         elif dict_expires_at > file_expires_at:
             with open(freva_token_file, mode="w") as fw:
-                json.dump(freva_file_dict)
+                json.dump(freva_token_dict, fw)
         return values
     
     @model_validator(mode="before")
     def _validate_secrets(cls, values: Any) -> Any:
-        values["freva_token_file"] = get_from_dict_or_env(
-            values,
+        values["freva_token_file"] = get_from_env(
             key="freva_token_file",
             env_key="FREVA_TOKEN_FILE",
-            default=None
+            default=f"{os.path.join(os.path.expanduser('~'), '.freva_token.json')}"
         ).strip('\"')
         values["freva_token_json"] = values["freva_token_json"] if "freva_token_json" in values.keys() else None
-        if values["freva_token_file"] and os.path.exists(values["freva_token_file"]) and not values["freva_token_json"]:
+        # if token file exists but token json is not defined, load it from file
+        if os.path.exists(values["freva_token_file"]) and not values["freva_token_json"]:
             with open(values["freva_token_file"], mode="r") as fr:
                 values["freva_token_dict"] = json.load(fr)
             values["freva_token_json"] = json.dumps(values["freva_token_dict"])
-        elif values["freva_token_file"] and not os.path.exists(values["freva_token_file"]) and values["freva_token_json"]:
+        # if freva token file  does not exist but token json does, write json string to file
+        elif not os.path.exists(values["freva_token_file"]) and values["freva_token_json"]:
             values["freva_token_dict"] = json.loads(values["freva_token_json"])
             with open(values["freva_token_file"], mode="w") as fw:
                 json.dump(values["freva_token_dict"], fw)
-        elif values["freva_token_file"] and os.path.exists(values["freva_token_file"]) and values["freva_token_json"]:
-            values["freva_token_dict"] = json.loads(values["freva_token_json"])
+        elif not os.path.exists(values["freva_token_file"]) and not values["freva_token_json"]:
+            raise ValueError(f"Neither the Freva token file {values["freva_token_file"]} nor the Freva Token JSON-String could be found.")
+        values["freva_token_dict"] = json.loads(values["freva_token_json"])
         values = cls._update_token_file(values)
         values["freva_auth_token"] = values["freva_token_dict"]["access_token"]
         return values
@@ -88,36 +89,30 @@ class FrevaChat(BaseChatModel):
                 "Authorization": f"Bearer {self.freva_auth_token.get_secret_value()}"
             }
         }
-        self.client = Client(host=self.base_url, **self.client_kwargs)
-        try:
-            response = self.client.request(
-                method="GET", 
-                url="/getthread", 
-                stream=False, 
-                params={
-                    "thread_id": self.thread_id or None,
-                    "user_id": self.user_id or None,  
-                },
+        token_expires_at = datetime.fromtimestamp(self.freva_token_dict["expires"])
+        token_refresh_expires_at = datetime.fromtimestamp(self.freva_token_dict["refresh_expires"])
+        now = datetime.now()
+        if now > token_refresh_expires_at:
+            raise ValueError(
+                (
+                    "(Refresh) token in json-encoded token string has expired. "
+                    f"Please generate a new token using the Freva instance website at: {self.base_url}"
+                )
             ) 
-        except ConnectionError as e:
-            if e.errno == 401:
-                try:
-                    _, tmp_file_name = tempfile.mkstemp(suffix=".json", prefix="freva_token")
-                    with open(file=tmp_file_name, mode="w") as tmp:
-                        json.dump(
-                            self.freva_token_dict,
-                            tmp
-                        )
-                    Auth = freva_client.auth.Auth(token_file=tmp_file_name or None)
-                    self.freva_token_dict=Auth.authenticate(
-                        host=self.base_url,
-                        _auto=True,
-                    )
-                    self.freva_auth_token = convert_to_secret_str(self.freva_token_dict["access_token"])
-                except:
-                    raise 
-                finally:
-                    os.remove(tmp_file_name)
+        self.client = Client(host=f"{self.base_url}/api/chatbot", **self.client_kwargs)
+        if now > token_expires_at:
+            self.logger.debug("Token expired. Using refresh token to generate new token and writing it to file.")
+            try:
+                Auth = freva_client.auth.Auth(token_file=self.freva_token_file or None)
+                self.freva_token_dict=Auth.authenticate(
+                    host=self.base_url,
+                    _auto=True,
+                )
+                self.freva_auth_token = convert_to_secret_str(self.freva_token_dict["access_token"])
+                with open(self.freva_token_file, mode="w") as fw:
+                    json.dump(self.freva_token_dict, fw)
+            except:
+                raise 
         return self
         
     def _reset(self) -> None:
@@ -146,7 +141,7 @@ class FrevaChat(BaseChatModel):
     run_manager: Optional[CallbackManagerForLLMRun] = None,
     **kwargs: Any,
     ) -> ChatResult:
-        self.logger.info("Called _generate")
+        self.logger.debug("Called _generate")
         try:
             stream = self._stream(prompt, stop, run_manager, **kwargs)
             chat_result: ChatResult = generate_from_stream(stream)
@@ -293,7 +288,7 @@ class FrevaChat(BaseChatModel):
                         content="\n```\n" +content[0]+"\n```\n"
                 )
             elif variant=="Image":
-                self.logger.info("Returning image")
+                self.logger.debug("Returning image")
                 base64_string=content
                 message=Message(
                     variant="Image", 
