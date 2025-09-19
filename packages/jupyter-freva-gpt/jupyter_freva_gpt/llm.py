@@ -106,7 +106,7 @@ class FrevaChat(BaseChatModel):
                 Auth = freva_client.auth.Auth(token_file=self.freva_token_file or None)
                 self.freva_token_dict=Auth.authenticate(
                     host=self.base_url,
-                    _auto=True,
+                    force=False,
                 )
                 self.freva_auth_token = convert_to_secret_str(self.freva_token_dict["access_token"])
                 with open(self.freva_token_file, mode="w") as fw:
