@@ -84,11 +84,6 @@ class FrevaChat(BaseChatModel):
     
     @model_validator(mode="after")
     def _validate_env(self) -> Dict:
-        self.client_kwargs = {
-            "headers": {
-                "Authorization": f"Bearer {self.freva_auth_token.get_secret_value()}"
-            }
-        }
         token_expires_at = datetime.fromtimestamp(self.freva_token_dict["expires"])
         token_refresh_expires_at = datetime.fromtimestamp(self.freva_token_dict["refresh_expires"])
         now = datetime.now()
@@ -99,9 +94,8 @@ class FrevaChat(BaseChatModel):
                     f"Please generate a new token using the Freva instance website at: {self.base_url}"
                 )
             ) 
-        self.client = Client(host=f"{self.base_url}/api/chatbot", **self.client_kwargs)
         if now > token_expires_at:
-            self.logger.debug("Token expired. Using refresh token to generate new token and writing it to file.")
+            self.logger.warning(f"Freva auth token expired. Using refresh token to generate new token and writing it to file {self.freva_token_file}.")
             try:
                 Auth = freva_client.auth.Auth(token_file=self.freva_token_file or None)
                 self.freva_token_dict=Auth.authenticate(
@@ -113,6 +107,12 @@ class FrevaChat(BaseChatModel):
                     json.dump(self.freva_token_dict, fw)
             except:
                 raise 
+        self.client_kwargs = {
+            "headers": {
+                "Authorization": f"Bearer {self.freva_auth_token.get_secret_value()}"
+            }
+        }
+        self.client = Client(host=f"{self.base_url}/api/chatbot", **self.client_kwargs)
         return self
         
     def _reset(self) -> None:
@@ -197,8 +197,7 @@ class FrevaChat(BaseChatModel):
         **kwargs: Any,
     ) -> Iterator[ChatMessageChunk]:
         
-        if stop is None:
-            stop=self.stop
+        stop = stop or self.stop
         prompt = BasePrompt(messages=[BaseMessage(content=message.content, type=message.type) for message in messages])._format_messages_for_chat()
         self.logger.info(f"thread id : {self.thread_id}")
         # remove any image strings from the prompt to reduce number of tokens drastically
@@ -225,9 +224,6 @@ class FrevaChat(BaseChatModel):
                     "thread_id":self.thread_id or None,
                     "user_id": self.user_id or None,
                 },
-                headers = {
-                    "Authorization": f"Bearer {self.freva_auth_token.get_secret_value() if self.freva_auth_token else None}"
-                }
             )
         first_part=True
         code_started=False
