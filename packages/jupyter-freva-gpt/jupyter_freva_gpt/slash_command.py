@@ -1,7 +1,9 @@
+from jupyter_server.base.handlers import JupyterHandler
 from jupyter_ai.chat_handlers.base import BaseChatHandler, SlashCommandRoutingType
 from jupyter_ai.models import HumanChatMessage
 from ._client import Client
 import json
+import os
 
 
 class PingSlashCommand(BaseChatHandler):
@@ -21,7 +23,7 @@ class PingSlashCommand(BaseChatHandler):
     name = "Ping"
     help = "A command to get the chat backends capabilities"
     routing_type = SlashCommandRoutingType(slash_id="ping")
-    base_url = "https://nextgems.dkrz.de/api/chatbot/"
+    base_url = "https://freva.dkrz.de/api/chatbot/"
     client : Client = Client(host=base_url, timeout=5)
 
     uses_llm = False
@@ -56,7 +58,7 @@ class DocsSlashCommand(BaseChatHandler):
     name = "Docs"
     help = "A command that prints out some documentation on the backend"
     routing_type = SlashCommandRoutingType(slash_id="docs")
-    base_url = "https://nextgems.dkrz.de/api/chatbot/"
+    base_url = "https://freva.dkrz.de/api/chatbot/"
     client : Client = Client(host=base_url, timeout=5)
 
     uses_llm = False
@@ -67,3 +69,28 @@ class DocsSlashCommand(BaseChatHandler):
     async def process_message(self, message: HumanChatMessage):
         self.reply(response=self.client.request(method="GET", url="/docs"),
                    human_msg=message)
+        
+class LoginSlashCommand(BaseChatHandler):
+    """
+    A test slash command implementation that developers should build from. The
+    string used to invoke this command is set by the `slash_id` keyword argument
+    in the `routing_type` attribute. The command is mainly implemented in the
+    `process_message()` method. See built-in implementations under
+    `jupyter_ai/handlers` for further reference.
+
+    The provider is made available to Jupyter AI by the entry point declared in
+    `pyproject.toml`. If this class or parent module is renamed, make sure the
+    update the entry point there as well.
+    """
+
+    id = "login"
+    name = "Login"
+    help = "A command that lets the user login via OAuth2"
+    routing_type = SlashCommandRoutingType(slash_id="login")
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    async def process_message(self, message: HumanChatMessage):
+        root_handler:JupyterHandler=list(self._root_chat_handlers.values())[0]
+        host=root_handler.request.host
+        self.reply(response=f"Click [here](http://{host}/api/ai/oauth/login) to log in.", human_msg=message)
