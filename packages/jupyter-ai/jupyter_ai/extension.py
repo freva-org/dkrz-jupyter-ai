@@ -24,8 +24,6 @@ from .handlers import (
     ModelProviderHandler,
     RootChatHandler,
     SlashCommandsInfoHandler,
-    OAuthStartHandler,
-    OAuthCallbackHandler,
 )
 from .history import BoundedChatHistory
 
@@ -62,8 +60,6 @@ class AiExtension(ExtensionApp):
         (r"api/ai/providers?", ModelProviderHandler),
         (r"api/ai/providers/embeddings?", EmbeddingsModelProviderHandler),
         (r"api/ai/completion/inline/?", DefaultInlineCompletionHandler),
-        (r"api/ai/oauth/login?", OAuthStartHandler),
-        (r"api/ai/oauth/callback?", OAuthCallbackHandler),
         # serve the default persona avatar at this path.
         # the `()` at the end of the URL denotes an empty regex capture group,
         # required by Tornado.
