@@ -1,0 +1,25 @@
+{
+  "name": "@jupyter-ai/freva-gpt",
+  "version": "2.31.6",
+  "description": "FrevaGPT package for Jupyter AI Python. Not published on NPM.",
+  "private": true,
+  "homepage": "https://github.com/freva-org/freva-jupyter-ai",
+  "bugs": {
+    "url": "https://github.com/freva-org/freva-jupyter-ai/issues",
+    "email": "freva@dkrz.de"
+  },
+  "license": "BSD-3-Clause",
+  "author": {
+    "name": "Climate Informatics",
+    "email": "jupyter@googlegroups.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jupyterlab/jupyter-ai.git"
+  },
+  "scripts": {
+    "dev-install": "pip install -e \".\"",
+    "dev-uninstall": "pip uninstall jupyter_freva_gpt -y",
+    "install-from-src": "pip install ."
+  }
+}

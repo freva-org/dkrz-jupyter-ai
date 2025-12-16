@@ -21,4 +21,5 @@ version-cmd = "python ../../scripts/bump-version.py --skip-if-dirty"
 python_packages = [
     "packages/jupyter-ai:jupyter-ai",
     "packages/jupyter-ai-magics:jupyter-ai-magics",
+    "packages/jupyter-ai-magics:jupyter-freva-gpt",
 ]

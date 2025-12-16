@@ -2281,6 +2281,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@jupyter-ai/freva-gpt@workspace:packages/jupyter-freva-gpt":
+  version: 0.0.0-use.local
+  resolution: "@jupyter-ai/freva-gpt@workspace:packages/jupyter-freva-gpt"
+  languageName: unknown
+  linkType: soft
+
 "@jupyter-ai/magics@workspace:packages/jupyter-ai-magics":
   version: 0.0.0-use.local
   resolution: "@jupyter-ai/magics@workspace:packages/jupyter-ai-magics"
