@@ -5,17 +5,18 @@
   "keywords": [
     "jupyter",
     "jupyterlab",
-    "jupyterlab-extension"
+    "jupyterlab-extension",
+    "freva-gpt"
   ],
-  "homepage": "https://github.com/jupyterlab/jupyter-ai",
+  "homepage": "https://github.com/freva-org/freva-jupyter-ai",
   "bugs": {
-    "url": "https://github.com/jupyterlab/jupyter-ai/issues",
-    "email": "jupyter@googlegroups.com"
+    "url": "https://github.com/freva-org/freva-jupyter-ai/issues",
+    "email": "freva@dkrz.de"
   },
   "license": "BSD-3-Clause",
   "author": {
-    "name": "Project Jupyter",
-    "email": "jupyter@googlegroups.com"
+    "name": "Freva",
+    "email": "freva@dkrz.de"
   },
   "files": [
     "lib/**/*.{d.ts,eot,gif,html,jpg,js,js.map,json,png,svg,woff2,ttf}",
@@ -27,7 +28,7 @@
   "style": "style/index.css",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jupyterlab/jupyter-ai.git"
+    "url": "https://github.com/freva-org/freva-jupyter-ai.git"
   },
   "scripts": {
     "build": "jlpm build:lib && jlpm build:labextension:dev",
