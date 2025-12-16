@@ -58,26 +58,26 @@ class FrevaChat(BaseChatModel):
         return values
     
     @model_validator(mode="before")
+    @classmethod
     def _validate_secrets(cls, values: Any) -> Any:
+        """Validate freva token file"""
         values["freva_token_file"] = get_from_env(
-            key="freva_token_file",
-            env_key="FREVA_TOKEN_FILE",
-            default=f"{os.path.join(os.path.expanduser('~'), '.freva_token.json')}"
-        ).strip('\"')
-        values["freva_token_json"] = values["freva_token_json"] if "freva_token_json" in values.keys() else None
+                                        key="freva_token_file",
+                                        env_key="FREVA_TOKEN_FILE",
+                                        default=f"{os.path.join(os.path.expanduser('~'), '.freva_token.json')}"
+        )
         # if token file exists but token json is not defined, load it from file
+        values["freva_token_json"] = values.get("freva_token_json", None)
         if os.path.exists(values["freva_token_file"]) and not values["freva_token_json"]:
             with open(values["freva_token_file"], mode="r") as fr:
                 values["freva_token_dict"] = json.load(fr)
-            values["freva_token_json"] = json.dumps(values["freva_token_dict"])
         # if freva token file  does not exist but token json does, write json string to file
         elif not os.path.exists(values["freva_token_file"]) and values["freva_token_json"]:
             values["freva_token_dict"] = json.loads(values["freva_token_json"])
             with open(values["freva_token_file"], mode="w") as fw:
                 json.dump(values["freva_token_dict"], fw)
-        elif not os.path.exists(values["freva_token_file"]) and not values["freva_token_json"]:
-            raise ValueError(f"Neither the Freva token file {values['freva_token_file']} nor the Freva Token JSON-String could be found.")
-        values["freva_token_dict"] = json.loads(values["freva_token_json"])
+        else:
+               raise FileNotFoundError("Freva token file does not exist and no freva token json string provided. Please login via the /login slash command first.") from None
         values = cls._update_token_file(values)
         values["freva_auth_token"] = values["freva_token_dict"]["access_token"]
         return values
@@ -88,12 +88,10 @@ class FrevaChat(BaseChatModel):
         token_refresh_expires_at = datetime.fromtimestamp(self.freva_token_dict["refresh_expires"])
         now = datetime.now()
         if now > token_refresh_expires_at:
-            raise ValueError(
-                (
-                    "(Refresh) token in json-encoded token string has expired. "
-                    f"Please generate a new token using the Freva instance website at: {self.base_url}"
-                )
-            ) 
+            try:
+                self.freva_token_dict=freva_client.authenticate(host=self.base_url)
+            except Exception as e:
+                raise e from None
         if now > token_expires_at:
             self.logger.warning(f"Freva auth token expired. Using refresh token to generate new token and writing it to file {self.freva_token_file}.")
             try:
