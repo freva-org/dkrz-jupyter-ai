@@ -68,9 +68,7 @@ class FrevaGPTProvider(BaseProvider, FrevaChat):
     """List of supported models by their IDs. For registry providers, this will
     be just ["*"]."""
 
-    fields: ClassVar[List[Field]] = [
-        MultilineTextField(key="freva_token_json", label="JSON-encoded Freva API Token", format="json")
-        ]
+    fields: ClassVar[List[Field]] = []
     """User inputs expected by this provider when initializing it. Each `Field` `f`
     should be passed in the constructor as a keyword argument, keyed by `f.key`."""
 
@@ -84,7 +82,7 @@ class FrevaGPTProvider(BaseProvider, FrevaChat):
     model_id_label: ClassVar[str] = "Model ID"
     """Human-readable label of the model ID."""
 
-    manages_history: ClassVar[bool] = True # currently set to false, as setting this true causes issues currently
+    manages_history: ClassVar[bool] = True 
     """Whether this provider manages its own conversation history upstream. If
     set to `True`, Jupyter AI will not pass the chat history to this provider
     when invoked."""
@@ -96,7 +94,7 @@ class FrevaGPTProvider(BaseProvider, FrevaChat):
     choose a default persona when rendering agent messages by this provider.
     """
 
-    unsupported_slash_commands: ClassVar[set] = set(("/learn", "/ask"))
+    unsupported_slash_commands: ClassVar[set] = set(("/learn", "/ask", "/test"))
     """
     A set of slash commands unsupported by this provider. Unsupported slash
     commands are not shown in the help message, and cannot be used while this
