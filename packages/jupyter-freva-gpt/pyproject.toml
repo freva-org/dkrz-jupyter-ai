@@ -34,8 +34,8 @@ test = ["coverage", "pytest", "pytest-asyncio", "pytest-cov"]
 frevagpt-provider = "jupyter_freva_gpt.provider:FrevaGPTProvider"
 
 [project.entry-points."jupyter_ai.chat_handlers"]
-ping-slash-command = "jupyter_freva_gpt.slash_command:PingSlashCommand"
 docs-slash-command = "jupyter_freva_gpt.slash_command:DocsSlashCommand"
+login-slash-command = "jupyter_freva_gpt.slash_command:LoginSlashCommand"
 
 [tool.hatch.build.hooks.version]
 path = "jupyter_freva_gpt/_version.py"
