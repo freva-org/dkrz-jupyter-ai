@@ -227,7 +227,7 @@ class FrevaChat(BaseChatModel):
                     "thread_id":self.thread_id or "",
                     "user_id": self.user_id or "",
             }
-            url = f"/streamresponse?{urllib.parse.urlencode(params, quote_via=urllib.parse.quote)}"
+            url = f"streamresponse?{urllib.parse.urlencode(params, quote_via=urllib.parse.quote)}"
             stream=self.client.request(
                 method="GET", 
                 url=url, 
