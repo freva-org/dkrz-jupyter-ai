@@ -10,7 +10,7 @@ from langchain.prompts import (
     SystemMessagePromptTemplate,
 )
 
-from .llm import FrevaChat
+from .llm import FrevaChat, AuthError
 from .available_backends import available_backends
 
 
@@ -119,6 +119,12 @@ class FrevaGPTProvider(BaseProvider, FrevaChat):
     @property
     def allows_concurrency(self):
         # At present, FrevaGPT providers fail with concurrent messages.
+        return True
+    
+    @classmethod
+    def is_not_auth_exc(cls, e:Exception):
+        if isinstance(e, AuthError):
+            return True
         return False
     
     def get_prompt_template(self, format) -> PromptTemplate:

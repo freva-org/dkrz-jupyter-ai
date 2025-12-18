@@ -351,6 +351,13 @@ class BaseProvider(BaseModel):
         Determine if the exception is an API key error. Can be implemented by subclasses.
         """
         return False
+    
+    @classmethod
+    def is_not_auth_exc(cls, _: Exception):
+        """
+        Determine if the exception is an authentication error. Can be implemented by subclasses.
+        """
+        return False
 
     def update_prompt_template(self, format: str, template: str):
         """
