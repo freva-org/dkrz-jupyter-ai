@@ -58,7 +58,7 @@ class LoginSlashCommand(BaseChatHandler):
                                                 fallback_base_url
         )
         auth_url = f"{base_url}/api/freva-nextgen/auth/v2"
-        device_endpoint = f"{auth_url}/device"
+        device_endpoint = f"{auth_url}/device?offline_access=True"
         token_endpoint = f"{auth_url}/token"
         self.device_auth_client = DeviceAuthClient(token_endpoint=token_endpoint,
                                                    device_endpoint=device_endpoint,
