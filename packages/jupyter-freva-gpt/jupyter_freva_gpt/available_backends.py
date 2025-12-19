@@ -1,4 +1,3 @@
-import httpx
 
 # available backends (top is default)
 available_backends=[

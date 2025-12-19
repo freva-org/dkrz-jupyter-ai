@@ -1,5 +1,5 @@
-from typing import Any, List, Literal, Union, Sequence
-from pydantic import BaseModel, Field
+from typing import Literal, Union, Sequence
+from pydantic import BaseModel
 from langchain_core.messages import BaseMessage
 
 class Message(BaseModel):
