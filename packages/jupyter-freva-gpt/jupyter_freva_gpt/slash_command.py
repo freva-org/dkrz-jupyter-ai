@@ -84,7 +84,7 @@ class LoginSlashCommand(BaseChatHandler):
                 response = "Login successful! You can now use the FrevaGPT provider."
                 
             except Exception:
-                response = f"Error encountered during login. Please try again later."
+                response = "Error encountered during login. Please try again later."
             self.reply(response=response, human_msg=message)
 
     async def handle_exc(self, e: Exception, message: HumanChatMessage):
