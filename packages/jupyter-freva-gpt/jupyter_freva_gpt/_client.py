@@ -1,4 +1,4 @@
-from typing import Any, Mapping, Optional, Tuple, List
+from typing import Any, Mapping, Optional, Tuple, List, Union
 import logging
 import platform
 import ipaddress
@@ -58,9 +58,9 @@ class Client:
                 r.raise_for_status()
             except httpx.HTTPStatusError as e:
                 e.response.read()
-                raise ConnectionError(e.response.status_code, e.response.text) from None
+                raise ConnectionError(e.response.status_code, f"Error connecting to url {_parse_host(e.request.url)} with error: {e.response.text}") from None
         except httpx.ConnectError as e:
-            raise ConnectionError(101, f"Failed to connect to {e.request.url}. Please try again." ) from None
+            raise ConnectionError(101, f"Failed to connect to {_parse_host(e.request.url)}. Please try again." ) from None
         return r
     
     def request(self, *args, stream=False, **kwargs):
@@ -72,9 +72,7 @@ class Client:
                             r.raise_for_status()
                         except httpx.HTTPStatusError as e:
                             e.response.read()
-                            raise ConnectionError(e.response.status_code, e.response.text) from None
-                        except httpx.ConnectError as e:
-                            raise ConnectionError(101, "Failed to connect. Please try again." ) from None
+                            raise ConnectionError(e.response.status_code, f"Error connecting to url {_parse_host(e.request.url)} with error: {e.response.text}") from None
                         complete_parts, partial_response = [], ""
                         for chunk in r.iter_bytes():
                             chunk_decoded = chunk.decode("utf-8")
@@ -83,7 +81,7 @@ class Client:
                                 for part in complete_parts:
                                     yield part
                 except httpx.ConnectError as e:
-                    raise ConnectionError(101, f"Failed to connect to url {e.request.url}. Please try again." ) from None
+                    raise ConnectionError(101, f"Failed to connect to url {_parse_host(e.request.url)}. Please try again." ) from None
             return inner()
         else:
             try:
@@ -93,9 +91,9 @@ class Client:
                     return complete_parts[0]
                 else:
                     return r.json()
-            except JSONDecodeError as e:
+            except JSONDecodeError:
                 self.logger.warning(
-                    (f"Encountered error when trying to decode the request from JSON.  Returning text instead.")
+                    ("Encountered error when trying to decode the request from JSON.  Returning text instead.")
                 )
                 return r.text
 
@@ -109,7 +107,7 @@ class AsyncClient:
         **kwargs,
     ) -> None:
         """
-        Creates a httpx client. Default parameters are the same as those defined in httpx
+        Creates an async httpx client. Default parameters are the same as those defined in httpx
         except for the following:
         - `follow_redirects`: True
         - `timeout`: None
@@ -141,9 +139,9 @@ class AsyncClient:
                 r.raise_for_status()
             except httpx.HTTPStatusError as e:
                 e.response.aread()
-                raise ConnectionError(e.response.status_code, e.response.text) from None
+                raise ConnectionError(e.response.status_code, f"Error connecting to url {_parse_host(e.request.url)} with error: {e.response.text}") from None
         except httpx.ConnectError as e:
-            raise ConnectionError(101, f"Failed to connect to {e.request.url}. Please try again." ) from None
+            raise ConnectionError(101, f"Failed to connect to {_parse_host(e.request.url)}. Please try again." ) from None
         return r
     
     async def request(self, *args, stream=False, **kwargs):
@@ -155,9 +153,7 @@ class AsyncClient:
                             r.raise_for_status()
                         except httpx.HTTPStatusError as e:
                             await e.response.aread()
-                            raise ConnectionError(e.response.status_code, e.response.text) from None
-                        except httpx.ConnectError as e:
-                            raise ConnectionError(101, "Failed to connect. Please try again." ) from None
+                            raise ConnectionError(e.response.status_code, f"Error connecting to url {_parse_host(e.request.url)} with error: {e.response.text}") from None
                         complete_parts, partial_response = [], ""
                         async for chunk in r.aiter_bytes():
                             chunk_decoded = chunk.decode("utf-8")
@@ -176,13 +172,13 @@ class AsyncClient:
                     return complete_parts[0]
                 else:
                     return r.json()
-            except JSONDecodeError as e:
+            except JSONDecodeError:
                 self.logger.warning(
-                    (f"Encountered error when trying to decode the request from JSON.  Returning text instead.")
+                    ("Encountered error when trying to decode the request from JSON.  Returning text instead.")
                 )
                 return r.text
     
-def _process_chunks(self, chunk: str, partial_response: str = "") -> Tuple[List[dict], str]:
+def _process_chunks(chunk: str, partial_response: str = "") -> Tuple[List[dict], str]:
     """
     Processes a chunk of string data, which represent JSON-like objects split across chunks.
 
@@ -206,6 +202,9 @@ def _process_chunks(self, chunk: str, partial_response: str = "") -> Tuple[List[
         return d
     # sanitize input string
     chunk = chunk.strip().strip('\n')
+    # check that chunk is not empty
+    if not chunk:
+        return [], partial_response
     # Attempt to split the input chunk into potential JSON-like parts based on "}{"
     chunk_split = chunk.split("}{")
     # If there is no "}{", the chunk might represent a single or partial JSON-like object
@@ -257,7 +256,8 @@ def _process_chunks(self, chunk: str, partial_response: str = "") -> Tuple[List[
                 
             complete_parts.append(recurse_dict(json.loads(fixed_part)))
 
-def _parse_host(cls, host): 
+def _parse_host(host: Union[str, httpx.URL]):
+    host=str(host)
     host, port = host or '', 11434
     scheme, _, hostport = host.partition('://')
     if not hostport:
