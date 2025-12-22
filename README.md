@@ -78,9 +78,14 @@ For more specific instructions for each model provider, refer to [the model prov
     jlpm build
     ```
 3. Start up a local jupyter lab server:
+    ```bash
+    jlpm dev \
+    --AiExtension.allowed_providers FrevaGPT \
+    --AiExtension.allowed_providers X \
+    --AiExtension.default_language_model FrevaGPT:gpt-4o \
+    --AiExtension.model_parameters FrevaGPT='{"base_url":"https://nextgems.dkrz.de"}'
     ```
-    jlpm dev --AiExtension.model_parameters FrevaGPT='{"base_url":"https://nextgems.dkrz.de"}' # change base_url to any other available backend if needed
-    ```
+    **Note** : You can change the final parameter to point to any valid host where an instance of FrevaGPT is available. The first two arguments ensure that only FrevaGPT is available as a chat provider (second argument is related to [this](https://github.com/jupyterlab/jupyter-ai/issues/913) issue).
 4. To remove the development install:
     ```
     jlpm dev-uninstall
