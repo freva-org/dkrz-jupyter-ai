@@ -3,10 +3,22 @@
 
 import pytest
 from jupyter_ai_magics.utils import get_lm_providers
+from jupyter_server.serverapp import ServerApp
 
 KNOWN_LM_A = "openai"
 KNOWN_LM_B = "huggingface_hub"
 
+import logging
+
+logger = logging.getLogger(__name__)
+
+@pytest.fixture(autouse=True)
+def cleanup_jupyter_app():
+    app = ServerApp.instance()
+    logger.info(f"ServerApp instance: {app}")
+    yield
+    logger.info(f"Stopping ServerApp instance: {app}")
+    app.stop()
 
 @pytest.mark.parametrize(
     "restrictions",

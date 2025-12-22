@@ -12,8 +12,18 @@ from jupyter_ai.config_manager import (
 )
 from jupyter_ai.models import DescribeConfigResponse, GlobalConfig, UpdateConfigRequest
 from jupyter_ai_magics.utils import get_em_providers, get_lm_providers
+from jupyter_server.serverapp import ServerApp
 from pydantic import ValidationError
 
+logger = logging.getLogger(__name__)
+
+@pytest.fixture(autouse=True)
+def cleanup_jupyter_app():
+    app = ServerApp.instance()
+    logger.info(f"ServerApp instance: {app}")
+    yield
+    logger.info(f"Stopping ServerApp instance: {app}")
+    app.stop()
 
 @pytest.fixture
 def config_path(jp_data_dir):
