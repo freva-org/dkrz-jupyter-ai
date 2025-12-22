@@ -63,7 +63,7 @@ class FrevaChat(BaseChatModel):
     
     @model_validator(mode="before")
     @classmethod
-    def _validate_secrets(cls, values: Any) -> Any:
+    def _validate_secret_file(cls, values: Any) -> Any:
         """Validate freva token file"""
         values["freva_token_file"] = get_from_env(
                                         key="freva_token_file",
@@ -87,7 +87,7 @@ class FrevaChat(BaseChatModel):
         return values
     
     @model_validator(mode="after")
-    def _validate_env(self) -> Dict:
+    def _validate_token(self) -> Dict:
         self.client = Client(host=f"{self.base_url}/api/chatbot", **self.client_kwargs)
         self.aclient = AsyncClient(host=f"{self.base_url}/api/chatbot", **self.client_kwargs)
         token_expires_at = datetime.fromtimestamp(self.freva_token_dict["expires"])
@@ -202,7 +202,7 @@ class FrevaChat(BaseChatModel):
     ) -> Iterator[ChatMessageChunk]:
         
         # check that auth token is still valid (refresh otherwise)
-        self._validate_env()
+        self._validate_token()
         
         prompt = BasePrompt(messages=[BaseMessage(content=message.content, type=message.type) for message in messages])._format_messages_for_chat()
         # remove any image strings from the prompt to reduce number of tokens drastically
@@ -281,7 +281,7 @@ class FrevaChat(BaseChatModel):
         **kwargs: Any,
         ) -> ChatResult:
                 # check that auth token is still valid (refresh otherwise)
-                self._validate_env()
+                self._validate_token()
                 try:
                     stream = self._astream(prompt, stop, run_manager, thread_id=None, **kwargs)
                     result = await agenerate_from_stream(stream)
@@ -298,7 +298,7 @@ class FrevaChat(BaseChatModel):
         ) -> AsyncIterator[ChatGenerationChunk]:
             
             # check that auth token is still valid (refresh otherwise)
-            self._validate_env()
+            self._validate_token()
             
             prompt = BasePrompt(messages=[BaseMessage(content=message.content, type=message.type) for message in messages])._format_messages_for_chat()
             # remove any image strings from the prompt to reduce number of tokens drastically
