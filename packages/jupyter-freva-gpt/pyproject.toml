@@ -25,7 +25,7 @@ description = "A Jupyter AI extension for FrevaGPT."
 authors = [
     { name = "Felix Oertel", email = "oertel@dkrz.de" },
 ]
-dependencies = ["freva-client>=2509.1.0"]
+dependencies = ["freva-client>=2509.1.0", "aiofiles"]
 
 [project.optional-dependencies]
 test = ["coverage", "pytest", "pytest-asyncio", "pytest-cov"]
