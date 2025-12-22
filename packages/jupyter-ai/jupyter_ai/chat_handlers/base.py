@@ -448,7 +448,7 @@ class BaseChatHandler:
     def reset_llm(self) -> None:
         """Resets the llm if it has the option to"""
         lm_provider = self.config_manager.lm_provider
-        if hasattr(lm_provider, "_reset") and self.llm:
+        if self.llm and hasattr(self.llm, "_reset"):
             self.log.info(f"Trying to reset provider: {lm_provider.name}")
             self.llm._reset()
             self.log.info("Successfully reset provider.")

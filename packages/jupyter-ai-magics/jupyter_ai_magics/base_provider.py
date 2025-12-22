@@ -121,7 +121,7 @@ class MultiEnvAuthStrategy(BaseModel):
 
     type: Literal["multienv"] = "multienv"
     names: list[str]
-    keyword_params: Optional[list[str]] = None
+    keyword_params: list[str] = []
 
     @model_validator(mode='after')
     def _validate_keyword_params(self) -> Self:
@@ -134,7 +134,6 @@ class MultiEnvAuthStrategy(BaseModel):
 
 class AwsAuthStrategy(BaseModel):
     """Require AWS authentication via Boto3"""
-
     type: Literal["aws"] = "aws"
 
 class FrevaAuthStrategy(BaseModel):
@@ -454,6 +453,9 @@ class BaseProvider(BaseModel):
     @property
     def supports_streaming(self):
         return self._supports_sync_streaming or self._supports_async_streaming
+    
+    def _reset(self):
+        return 
 
     async def generate_inline_completions(
         self, request: InlineCompletionRequest

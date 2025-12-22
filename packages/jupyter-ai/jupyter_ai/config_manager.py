@@ -65,8 +65,7 @@ def _validate_provider_authn(config: GlobalConfig, provider: Type[AnyProvider]):
     if not provider.auth_strategy or provider.auth_strategy.type not in ("env", "freva"):
         return
 
-    if provider.auth_strategy.name not in config.api_keys:
-        print("api_keys", config.api_keys)
+    if hasattr(provider.auth_strategy, "name") and provider.auth_strategy.name not in config.api_keys:
         raise AuthError(
             f"Missing API key for '{provider.auth_strategy.name}' in the config."
         )
