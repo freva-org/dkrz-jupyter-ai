@@ -20,12 +20,10 @@ from langchain_core.outputs import ChatGenerationChunk, ChatGeneration, ChatResu
 
 import urllib.parse
 import freva_client
+from freva_client.utils.auth_utils import AuthError
 
 from ._client import Client, AsyncClient
 from ._types import Message, BasePrompt
-
-class AuthError(Exception):
-    pass 
 
 default_user = os.environ["USER"] if "USER" in os.environ.keys() else "test-user"
 class FrevaChat(BaseChatModel):
