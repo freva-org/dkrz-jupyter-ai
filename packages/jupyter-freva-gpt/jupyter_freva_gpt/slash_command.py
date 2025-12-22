@@ -1,9 +1,12 @@
 import json
 import os
+
 from freva_client.utils.auth_utils import DeviceAuthClient
-from jupyter_ai.chat_handlers.base import BaseChatHandler, SlashCommandRoutingType
+from jupyter_ai.chat_handlers.base import (BaseChatHandler,
+                                           SlashCommandRoutingType)
 from jupyter_ai.models import HumanChatMessage
 from langchain_core.utils import get_from_env
+
 from ._client import Client
 
 fallback_base_url = "https://nextgems.dkrz.de/"

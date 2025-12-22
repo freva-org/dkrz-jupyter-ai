@@ -1,6 +1,8 @@
-from typing import Literal, Union, Sequence
-from pydantic import BaseModel
+from typing import Literal, Sequence, Union
+
 from langchain_core.messages import BaseMessage
+from pydantic import BaseModel
+
 
 class Message(BaseModel):
     variant: Literal["Prompt", "User", "Assistant", "Code", "CodeOutput", "Image", "ServerError", "OpenAIError", "CodeError", "StreamEnd", "ServerHint"]

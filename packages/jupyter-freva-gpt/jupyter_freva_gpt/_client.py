@@ -1,15 +1,15 @@
-from typing import Any, Mapping, Optional, Tuple, List, Union
-import logging
-import platform
 import ipaddress
 import json
-import httpx
+import logging
 import os
+import platform
 import socket
 import urllib.parse
 from importlib import metadata
-
 from json.decoder import JSONDecodeError
+from typing import Any, List, Mapping, Optional, Tuple, Union
+
+import httpx
 
 try:
   __version__ = metadata.version('jupyter_freva_gpt')

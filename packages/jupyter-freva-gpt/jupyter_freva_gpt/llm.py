@@ -1,29 +1,31 @@
 
-import aiofiles
 import json
 import logging
 import os
 import re
 import time
+import urllib.parse
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Iterator, AsyncIterator
-from traitlets.config import Application
+from typing import Any, AsyncIterator, Dict, Iterator, List, Optional
 
-from pydantic import Field, model_validator, SecretStr
-from langchain_core.utils import convert_to_secret_str, get_from_env
-from langchain_core.callbacks.manager import CallbackManagerForLLMRun
-from langchain_core.language_models.chat_models import agenerate_from_stream, generate_from_stream
-from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_core.messages import BaseMessage, ChatMessageChunk, AIMessage, AIMessageChunk
-from langchain_core.outputs import ChatGenerationChunk, ChatGeneration, ChatResult
-
-import urllib.parse
+import aiofiles
 import freva_client
 from freva_client.utils.auth_utils import AuthError
+from langchain_core.callbacks.manager import CallbackManagerForLLMRun
+from langchain_core.language_models.chat_models import (BaseChatModel,
+                                                        agenerate_from_stream,
+                                                        generate_from_stream)
+from langchain_core.messages import (AIMessage, AIMessageChunk, BaseMessage,
+                                     ChatMessageChunk)
+from langchain_core.outputs import (ChatGeneration, ChatGenerationChunk,
+                                    ChatResult)
+from langchain_core.utils import convert_to_secret_str, get_from_env
+from pydantic import Field, SecretStr, model_validator
+from traitlets.config import Application
 
-from ._client import Client, AsyncClient
-from ._types import Message, BasePrompt
+from ._client import AsyncClient, Client
+from ._types import BasePrompt, Message
 
 default_user = os.environ["USER"] if "USER" in os.environ.keys() else "test-user"
 class FrevaChat(BaseChatModel):

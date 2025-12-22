@@ -1,16 +1,13 @@
-from typing import ClassVar, List, Dict
+from typing import ClassVar, Dict, List
 
-from jupyter_ai_magics.base_provider import CHAT_SYSTEM_PROMPT, HUMAN_MESSAGE_TEMPLATE
 from jupyter_ai_magics import BaseProvider, Persona
-from langchain.prompts import (
-    ChatPromptTemplate,
-    HumanMessagePromptTemplate,
-    SystemMessagePromptTemplate,
-    PromptTemplate,
-)
+from jupyter_ai_magics.base_provider import (CHAT_SYSTEM_PROMPT,
+                                             HUMAN_MESSAGE_TEMPLATE)
+from langchain.prompts import (ChatPromptTemplate, HumanMessagePromptTemplate,
+                               PromptTemplate, SystemMessagePromptTemplate)
 
-from .llm import FrevaChat, AuthError
 from .available_backends import available_backends
+from .llm import AuthError, FrevaChat
 
 # path to freva avatar on the jupyter server
 FREVAGPT_AVATAR_ROUTE = "api/ai/static/freva_avatar.svg" 
