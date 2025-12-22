@@ -725,4 +725,3 @@ class AutocompleteOptionsHandler(BaseAPIHandler):
         return ListOptionsEntry(
             id=id, description=description, label=label, only_start=only_start
         )
-    
