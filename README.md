@@ -64,27 +64,27 @@ For more specific instructions for each model provider, refer to [the model prov
 
 ## Installation
 
-### Installation of wheels on Levante (Jupyter-AI, Jupyter-AI-magics, FrevaGPT):
-1. Create a new conda environment for installing and testing the packages (we use mamba here to resolve dependencies quickly):
-    ```bash
-    mamba create -n freva-gpt python=3.9 jupyter freva-client dill numpy matplotlib pandas xarray xesmf scipy netcdf4 cartopy contourpy geopy geopandas healpy astropy -c conda-forge --yes
-    # set up some environment variables for freva, so it knows which instance it will be using
-    conda env config vars set EVALUATION_SYSTEM_CONFIG_DIR=/work/ch1187/clint/freva-dev/freva -n freva-gpt
-    conda env config vars set EVALUATION_SYSTEM_CONFIG_FILE=/work/ch1187/clint/freva-dev/freva/evaluation_system.conf -n freva-gpt
-    mamba activate freva-gpt
+### Building Freva-Jupyter-AI for local testing:
+1. Create build env using conda:
     ```
-2. Install jupyter-ai-magics, jupyter-ai and jupyter-freva-gpt wheels within the `freva-gpt` environment:
-    ```bash
-    # Install jupyter-ai wheel 
-    python -m pip install /work/ch1187/clint/freva-gpt/freva-jupyter-ai/packages/jupyter-ai/dist/jupyter_ai-2.31.6-py3-none-any.whl
-    # Install jupyter-ai-magics wheel
-    python -m pip install /work/ch1187/clint/freva-gpt/freva-jupyter-ai/packages/jupyter-ai-magics/dist/jupyter_ai_magics-2.31.6-py3-none-any.whl
-    # Install jupyter-freva-gpt wheel
-    python -m pip install /work/ch1187/clint/freva-gpt/freva-jupyter-ai/packages/jupyter-freva-gpt/dist/jupyter_freva_gpt-0.3.1-py3-none-any.whl
+    conda create -n jupyter-ai -c conda-forge python=3.12 nodejs=20
+    conda activate jupyter-ai
     ```
-3. Run a jupyter lab instance for testing:
-    ```bash
-    jupyter lab
+2. Development install:
+    ```
+    # Installs all the dependencies and sets up the dev environment
+    ./scripts/install.sh
+    jlpm
+    jlpm build
+    ```
+3. Start up a local jupyter lab server:
+    ```
+    jlpm dev --AiExtension.model_parameters FrevaGPT='{"base_url":"https://nextgems.dkrz.de"}' # change base_url to any other available backend if needed
+    ```
+4. To remove the development install:
+    ```
+    jlpm dev-uninstall
+    jlpm clean
     ```
 
 ### Installation of official version of Jupyter-AI (does not include FrevaGPT and changes made to base version in this fork)
