@@ -78,7 +78,7 @@ class AiExtension(ExtensionApp):
 
     allowed_providers = List(
         Unicode(),
-        default_value=["FrevaGPT",],
+        default_value=None,
         help="Identifiers of allowlisted providers. If `None`, all are allowed.",
         allow_none=True,
         config=True,
