@@ -1,6 +1,5 @@
 import getpass
 import json
-import os
 import time
 import uuid
 from asyncio import AbstractEventLoop, Event
