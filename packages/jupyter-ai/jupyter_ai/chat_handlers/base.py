@@ -408,7 +408,9 @@ class BaseChatHandler:
         if f"{provider.id}" in self.model_parameters.keys():
             self.model_parameters[f"{provider.id}:{provider_params['model_id']}"] = self.model_parameters[f"{provider.id}"]
 
-        return self.model_parameters[f"{provider.id}:{provider_params['model_id']}"]
+        return self.model_parameters.get(
+            f"{provider.id}:{provider_params['model_id']}", {}
+        )
 
     def create_llm_chain(
         self, provider: type[BaseProvider], provider_params: dict[str, str]
