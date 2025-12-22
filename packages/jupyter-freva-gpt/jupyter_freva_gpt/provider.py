@@ -1,7 +1,11 @@
 from typing import ClassVar, List, Dict
 
+from jupyter_ai_magics.base_provider import CHAT_SYSTEM_PROMPT, HUMAN_MESSAGE_TEMPLATE
 from jupyter_ai_magics import BaseProvider, Persona
 from langchain.prompts import (
+    ChatPromptTemplate,
+    HumanMessagePromptTemplate,
+    SystemMessagePromptTemplate,
     PromptTemplate,
 )
 
@@ -78,3 +82,17 @@ class FrevaGPTProvider(BaseProvider, FrevaChat):
             template = self.custom_prompt_templates[format]
             super().update_prompt_template(format, template)
         return super().get_prompt_template(format)
+    
+    def get_chat_prompt_template(self):
+        name = self.__class__.name
+        return ChatPromptTemplate.from_messages(
+                [
+                    SystemMessagePromptTemplate.from_template(
+                        CHAT_SYSTEM_PROMPT
+                    ).format(provider_name=name, local_model_id=self.model_id),
+                    HumanMessagePromptTemplate.from_template(
+                        HUMAN_MESSAGE_TEMPLATE,
+                        template_format="jinja2",
+                    ),
+                ]
+            )
