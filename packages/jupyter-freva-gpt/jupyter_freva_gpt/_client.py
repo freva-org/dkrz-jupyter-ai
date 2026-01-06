@@ -162,7 +162,7 @@ class AsyncClient:
                                 for part in complete_parts:
                                     yield part
                 except httpx.ConnectError as e:
-                    raise ConnectionError(101, f"Failed to connect to url {e.request.url}. Please try again." ) from None
+                    raise ConnectionError(101, f"Failed to connect to url {_parse_host(e.request.url)}. Please try again." ) from None
             return inner()
         else:
             try:
@@ -190,7 +190,6 @@ def _process_chunks(chunk: str, partial_response: str = "") -> Tuple[List[dict],
     Tuple[List[str], str]: A list of complete JSON-like objects and the partial string (if any).
     """
     
-
     def recurse_dict(d: dict[str, Any]) -> dict[str, Any]:
         """
         Make sure that all (possibly escaped) json-strings within a dictionary are parsed as dicts
@@ -201,7 +200,7 @@ def _process_chunks(chunk: str, partial_response: str = "") -> Tuple[List[dict],
                     d[key]=recurse_dict(json.loads(value))
         return d
     # sanitize input string
-    chunk = chunk.strip().strip('\n')
+    chunk = chunk.strip().replace("\n","")
     # check that chunk is not empty
     if not chunk:
         return [], partial_response
