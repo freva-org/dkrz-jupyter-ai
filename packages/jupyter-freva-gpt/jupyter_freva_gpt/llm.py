@@ -7,7 +7,7 @@ import time
 import urllib.parse
 from datetime import datetime
 from pathlib import Path
-from typing import Any, AsyncIterator, Dict, Iterator, List, Optional
+from typing import Any, AsyncIterator, ClassVar, Dict, Iterator, List, Optional
 
 import aiofiles
 import freva_client
@@ -42,6 +42,7 @@ class FrevaChat(BaseChatModel):
     freva_token_dict: dict = Field(default=None)
     freva_auth_token: SecretStr = Field(default=None)
     logger: logging.Logger = Application.instance().log
+    disable_auth: ClassVar[bool] = False
     debug: bool = False
 
     @property
@@ -67,6 +68,7 @@ class FrevaChat(BaseChatModel):
     @classmethod
     def _validate_secret_file(cls, values: Any) -> Any:
         """Validate freva token file"""
+        values["disable_auth"] = values.get("disable_auth", cls.disable_auth)
         values["freva_token_file"] = get_from_env(
                                         key="freva_token_file",
                                         env_key="FREVA_TOKEN_FILE",
@@ -74,6 +76,9 @@ class FrevaChat(BaseChatModel):
         )
         # if token file exists but token json is not defined, load it from file
         values["freva_token_json"] = values.get("freva_token_json", None)
+        if values["disable_auth"]: 
+            cls.disable_auth = values["disable_auth"]
+            return values
         if os.path.exists(values["freva_token_file"]) and not values["freva_token_json"]:
             with open(values["freva_token_file"], mode="r") as fr:
                 values["freva_token_dict"] = json.load(fr)
@@ -92,6 +97,8 @@ class FrevaChat(BaseChatModel):
     def _validate_token(self) -> Dict:
         self.client = Client(host=f"{self.base_url}/api/chatbot", **self.client_kwargs)
         self.aclient = AsyncClient(host=f"{self.base_url}/api/chatbot", **self.client_kwargs)
+        if self.disable_auth: 
+            return self
         token_expires_at = datetime.fromtimestamp(self.freva_token_dict["expires"])
         token_refresh_expires_at = datetime.fromtimestamp(self.freva_token_dict["refresh_expires"])
         now = datetime.now()
