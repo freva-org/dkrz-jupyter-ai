@@ -20,15 +20,13 @@ class DocsSlashCommand(BaseChatHandler):
     name = "Docs"
     help = "A command that prints out some documentation on the backend"
     routing_type = SlashCommandRoutingType(slash_id="docs")
-
     uses_llm = False
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         lm_provider_params=self.config_manager.lm_provider_params
-        if lm_provider_params is None:
-            base_url = fallback_base_url
-        else:
+        base_url = fallback_base_url
+        if lm_provider_params:
             base_url = self.config_manager.lm_provider_params.get(
                                                 "base_url",
                                                 fallback_base_url
@@ -53,12 +51,11 @@ class LoginSlashCommand(BaseChatHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         lm_provider_params=self.config_manager.lm_provider_params
-        if lm_provider_params is None:
-            base_url = fallback_base_url
-        else:
-            base_url = self.config_manager.lm_provider_params.get(
-                                                "base_url",
-                                                fallback_base_url
+        base_url = fallback_base_url
+        if lm_provider_params:
+            base_url = lm_provider_params.get(
+                                            "base_url",
+                                            fallback_base_url
         )
         auth_url = f"{base_url}/api/freva-nextgen/auth/v2"
         device_endpoint = f"{auth_url}/device?offline_access=True"
