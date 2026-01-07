@@ -104,7 +104,7 @@ class FrevaChat(BaseChatModel):
         now = datetime.now()
         if now > token_refresh_expires_at:
             raise AuthError("Refresh token has expired. Please login again using the /login dash command.") from None
-        if now > token_expires_at:
+        elif now > token_expires_at:
             self.logger.warning(f"Freva auth token expired. Using refresh token to generate new token and writing it to file {self.freva_token_file}.")
             try:
                 Auth = freva_client.auth.Auth(token_file=self.freva_token_file or None)
