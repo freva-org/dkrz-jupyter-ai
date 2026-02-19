@@ -33,8 +33,9 @@ class Client:
         `kwargs` are passed to the httpx client.
         """
 
+        base_url = _parse_host(host or os.getenv('FREVAGPT_HOST'))
         self._client = httpx.Client(
-            base_url=_parse_host(host or os.getenv('FREVAGPT_HOST')),
+            base_url=base_url,
             follow_redirects=follow_redirects,
             timeout=timeout,
             # Lowercase all headers to ensure override
@@ -42,9 +43,12 @@ class Client:
                 k.lower(): v
                 for k, v in {
                 **(headers or {}),
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'User-Agent': f'frevagpt-python/{__version__} ({platform.machine()} {platform.system().lower()}) Python/{platform.python_version()}',
+                "Content-Type": "application/json",
+                'Accept': "application/json",
+                "User-Agent": f"frevagpt-python/{__version__} ({platform.machine()} {platform.system().lower()}) Python/{platform.python_version()}",
+                "X-Freva-Vault-URL": f"{base_url}:5002",
+                "X-Freva-Rest-URL": f"{base_url}:7777",
+                "X-Freva-Config-Path": "/opt/freva/core/freva/evaluation_system.conf",
                 }.items()
             },
             **kwargs,
@@ -113,9 +117,10 @@ class AsyncClient:
         - `timeout`: None
         `kwargs` are passed to the httpx client.
         """
-
+        
+        base_url = _parse_host(host or os.getenv("FREVAGPT_HOST"))
         self._client = httpx.AsyncClient(
-            base_url=_parse_host(host or os.getenv('FREVAGPT_HOST')),
+            base_url=base_url,
             follow_redirects=follow_redirects,
             timeout=timeout,
             # Lowercase all headers to ensure override
@@ -123,9 +128,12 @@ class AsyncClient:
                 k.lower(): v
                 for k, v in {
                 **(headers or {}),
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'User-Agent': f'frevagpt-python/{__version__} ({platform.machine()} {platform.system().lower()}) Python/{platform.python_version()}',
+                "Content-Type": "application/json",
+                'Accept': "application/json",
+                "User-Agent": f"frevagpt-python/{__version__} ({platform.machine()} {platform.system().lower()}) Python/{platform.python_version()}",
+                "X-Freva-Vault-URL": f"{base_url}:5002",
+                "X-Freva-Rest-URL": f"{base_url}:7777",
+                "X-Freva-Config-Path": "/opt/freva/core/freva/evaluation_system.conf",
                 }.items()
             },
             **kwargs,
