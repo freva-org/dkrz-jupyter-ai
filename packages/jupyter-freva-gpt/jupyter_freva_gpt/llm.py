@@ -95,9 +95,9 @@ class FrevaChat(BaseChatModel):
     
     @model_validator(mode="after")
     def _validate_token(self) -> Dict:
-        self.client = Client(host=f"{self.base_url}/api/chatbot", **self.client_kwargs)
-        self.aclient = AsyncClient(host=f"{self.base_url}/api/chatbot", **self.client_kwargs)
         if self.disable_auth: 
+            self.client = Client(host=f"{self.base_url}/api/chatbot", **self.client_kwargs)
+            self.aclient = AsyncClient(host=f"{self.base_url}/api/chatbot", **self.client_kwargs)
             return self
         token_expires_at = datetime.fromtimestamp(self.freva_token_dict["expires"])
         token_refresh_expires_at = datetime.fromtimestamp(self.freva_token_dict["refresh_expires"])
@@ -122,6 +122,8 @@ class FrevaChat(BaseChatModel):
                 "Authorization": f"Bearer {self.freva_auth_token.get_secret_value()}"
             }
         }
+        self.client = Client(host=f"{self.base_url}/api/chatbot", **self.client_kwargs)
+        self.aclient = AsyncClient(host=f"{self.base_url}/api/chatbot", **self.client_kwargs)
         return self
         
     def _reset(self) -> None:
