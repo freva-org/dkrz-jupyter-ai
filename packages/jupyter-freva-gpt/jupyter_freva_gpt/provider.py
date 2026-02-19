@@ -43,7 +43,7 @@ class FrevaGPTProvider(BaseProvider, FrevaChat):
     persona: ClassVar[Persona] = FrevaGPTPersona
     """The **persona** of this provider."""
 
-    unsupported_slash_commands: ClassVar[set] = set(("/learn", "/ask", "/test"))
+    unsupported_slash_commands: ClassVar[set] = set(("/learn", "/ask"))
     """
     A set of slash commands unsupported by this provider. Unsupported slash
     commands are not shown in the help message, and cannot be used while this
