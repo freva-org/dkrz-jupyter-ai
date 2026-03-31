@@ -83,7 +83,7 @@ For more specific instructions for each model provider, refer to [the model prov
     --AiExtension.allowed_providers FrevaGPT \
     --AiExtension.allowed_providers X \
     --AiExtension.default_language_model FrevaGPT:gpt-4.1 \
-    --AiExtension.model_parameters FrevaGPT='{"base_url":"https://nextgems.dkrz.de"}'
+    --AiExtension.model_parameters FrevaGPT='{"host":"https://nextgems.dkrz.de"}'
     ```
     **Note** : You can change the final parameter to point to any valid host where an instance of FrevaGPT is available. The first two arguments ensure that only FrevaGPT is available as a chat provider (second argument is related to [this](https://github.com/jupyterlab/jupyter-ai/issues/913) issue).
 4. To remove the development install:

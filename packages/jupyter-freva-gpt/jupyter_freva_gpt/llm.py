@@ -7,7 +7,7 @@ import time
 import urllib.parse
 from datetime import datetime
 from pathlib import Path
-from typing import Any, AsyncIterator, ClassVar, list, Optional
+from typing import Any, AsyncIterator, ClassVar, Optional
 
 import aiofiles
 import nest_asyncio
@@ -15,10 +15,10 @@ from langchain_core.callbacks.manager import CallbackManagerForLLMRun
 from langchain_core.language_models.chat_models import BaseChatModel, agenerate_from_stream
 from langchain_core.messages import AIMessage, AIMessageChunk, BaseMessage
 from langchain_core.outputs import ChatGeneration, ChatGenerationChunk, ChatResult
-from langchain_core.utils import convert_to_secret_str, get_from_env
-from py_oidc_auth_client import authenticate
+from langchain_core.utils import get_from_env
+from py_oidc_auth_client import authenticate, TokenStore, Token
 from py_oidc_auth_client.exceptions import AuthError
-from pydantic import Field, SecretStr, model_validator
+from pydantic import Field, model_validator
 from traitlets.config import Application
 
 from ._client import AsyncClient
@@ -27,20 +27,19 @@ from ._types import BasePrompt, Message
 nest_asyncio.apply()
 
 default_user = os.environ["USER"] if "USER" in os.environ.keys() else "test-user"
-
+default_host = "https://nextgems.dkrz.de"
 
 class FrevaChat(BaseChatModel):
 
     model_id: str
-    base_url: str = Field(default="https://nextgems.dkrz.de")
+    host: str = Field(default=default_host)
     user_id: str = Field(default=default_user)
     client_kwargs: dict = {}
     client: AsyncClient = Field(default=None)
     stop: str = Field(default="Generation complete")
     thread_id: str = Field(default=None)
-    freva_token_file: str = Field(default=None)
-    freva_token_dict: dict = Field(default=None)
-    freva_auth_token: SecretStr = Field(default=None)
+    freva_token_store: TokenStore = Field(default=TokenStore())
+    freva_auth_token: Token = Field(default=None)
     logger: logging.Logger = Application.instance().log
     disable_auth: ClassVar[bool] = False
     debug: bool = False
@@ -50,58 +49,56 @@ class FrevaChat(BaseChatModel):
         return "Freva-GPT"
 
     @classmethod
-    def _update_token_file(cls, values: dict) -> dict:
-        freva_token_file = values["freva_token_file"]
-        freva_token_dict = values["freva_token_dict"]
-        with open(freva_token_file, mode="r") as fr:
-            freva_file_dict = json.load(fr)
-        file_expires_at = datetime.fromtimestamp(freva_file_dict["expires"])
-        dict_expires_at = datetime.fromtimestamp(freva_token_dict["expires"])
-        if file_expires_at > dict_expires_at:
-            values["freva_token_dict"] = freva_file_dict
-        elif dict_expires_at > file_expires_at:
-            with open(freva_token_file, mode="w") as fw:
-                json.dump(freva_token_dict, fw)
+    def _update_token_or_store(cls, values: dict) -> dict:
+        freva_token_store: TokenStore = values["freva_token_store"]
+        current_token: Token = values["freva_auth_token"] 
+        stored_token = freva_token_store.get(values["host"])
+        if stored_token:
+            values["freva_auth_token"] = stored_token
+        else:
+            freva_token_store.put(host=values["host"], token=current_token)
         return values
 
     @model_validator(mode="before")
     @classmethod
-    def _validate_secret_file(cls, values: Any) -> Any:
+    def _validate_token_store(cls, values: dict[str, Any]) -> dict[str, Any]:
         """Validate freva token file"""
+        # skip if disable_auth setting is set
         values["disable_auth"] = values.get("disable_auth", cls.disable_auth)
-        values["freva_token_file"] = get_from_env(
-            key="freva_token_file",
-            env_key="FREVA_TOKEN_FILE",
-            default=f"{os.path.join(os.path.expanduser('~'), '.freva_token.json')}",
-        )
-        # if token file exists but token json is not defined, load it from file
-        values["freva_token_json"] = values.get("freva_token_json", None)
         if values["disable_auth"]:
             cls.disable_auth = values["disable_auth"]
             return values
-        if os.path.exists(values["freva_token_file"]) and not values["freva_token_json"]:
-            with open(values["freva_token_file"], mode="r") as fr:
-                values["freva_token_dict"] = json.load(fr)
-        # if freva token file  does not exist but token json does, write json string to file
-        elif not os.path.exists(values["freva_token_file"]) and values["freva_token_json"]:
-            values["freva_token_dict"] = json.loads(values["freva_token_json"])
-            with open(values["freva_token_file"], mode="w") as fw:
-                json.dump(values["freva_token_dict"], fw)
+        # check if env var pointing to token store is set
+        token_store_path = get_from_env(
+            key="freva_token_store",
+            env_key="FREVA_TOKEN_STORE",
+            default="",
+        )
+        # load host or set it to default if not part of values
+        values["host"] = values["host"] or default_host
+        # load token store
+        token_store = TokenStore(token_store_path)
+        values["freva_token_store"] = token_store
+        auth_token = values.get("freva_auth_token")
+        # if freva token store does not exist but token does, write token to store
+        if not os.path.exists(token_store._path) and auth_token:
+            token_store.put(host=values["host"], token=auth_token)
+        elif not auth_token and token_store.get(values["host"]):
+            values["freva_auth_token"] = token_store.get(values["host"])
         else:
             raise AuthError(
-                "Freva token file does not exist and no freva token json string provided. Please login via the /login slash command first."
+                "Freva token is not set and token store does not contain it. Please login via the /login slash command first."
             ) from None
-        values = cls._update_token_file(values)
-        values["freva_auth_token"] = values["freva_token_dict"]["access_token"]
+        values = cls._update_token_or_store(values)
         return values
 
     @model_validator(mode="after")
     def _validate_token(self):
         if self.disable_auth:
-            self.client = AsyncClient(host=f"{self.base_url}/api/chatbot", **self.client_kwargs)
+            self.client = AsyncClient(host=f"{self.host}/api/chatbot", **self.client_kwargs)
             return self
-        token_expires_at = datetime.fromtimestamp(self.freva_token_dict["expires"])
-        token_refresh_expires_at = datetime.fromtimestamp(self.freva_token_dict["refresh_expires"])
+        token_expires_at = datetime.fromtimestamp(self.freva_auth_token["expires"])
+        token_refresh_expires_at = datetime.fromtimestamp(self.freva_auth_token["refresh_expires"])
         now = datetime.now()
         if now > token_refresh_expires_at:
             raise AuthError(
@@ -109,25 +106,22 @@ class FrevaChat(BaseChatModel):
             ) from None
         elif now > token_expires_at:
             self.logger.warning(
-                f"Freva auth token expired. Using refresh token to generate new token and writing it to file {self.freva_token_file}."
+                "Freva auth token expired. Using refresh token to generate new token and updating token store."
             )
             try:
-                self.freva_token_dict = authenticate(
-                    host=f"{self.base_url}/api/freva-nextgen", store=self.freva_token_file or None
+                self.freva_auth_token = authenticate(
+                    host=f"{self.host}/api/freva-nextgen", 
+                    store=self.freva_token_store
                 )
-                self.freva_auth_token = convert_to_secret_str(
-                    self.freva_token_dict["access_token"]
-                )
-                with open(self.freva_token_file, mode="w") as fw:
-                    json.dump(self.freva_token_dict, fw)
+                self.freva_token_store.put(host=self.host, token=self.freva_auth_token)
             except Exception as e:
                 raise AuthError(
                     f"Could not generate a new token from the token file. Please try again or reauthenticate. {e}"
-                ) from None
+                ) 
         self.client_kwargs = {
-            "headers": {"Authorization": f"Bearer {self.freva_auth_token.get_secret_value()}"}
+            "headers": self.freva_auth_token["headers"]
         }
-        self.client = AsyncClient(host=f"{self.base_url}/api/chatbot", **self.client_kwargs)
+        self.client = AsyncClient(host=f"{self.host}/api/chatbot", **self.client_kwargs)
         return self
 
     def _reset(self) -> None:
@@ -184,7 +178,7 @@ class FrevaChat(BaseChatModel):
         **kwargs: Any,
     ) -> ChatResult:
         # check that auth token is still valid (refresh otherwise)
-        await self._validate_token()
+        self._validate_token()
         try:
             stream = self._astream(prompt, stop, run_manager, thread_id=None, **kwargs)
             result = await agenerate_from_stream(stream)
@@ -213,7 +207,6 @@ class FrevaChat(BaseChatModel):
         self.logger.debug(f"Calling _stream with prompt: {prompt}")
 
         if self.debug:
-
             class AsyncList(list):
                 async def __aiter__(self):
                     for item in self:
@@ -261,7 +254,7 @@ class FrevaChat(BaseChatModel):
             if variant == "ServerHint":
                 if not self.thread_id and "thread_id" in content.keys():
                     self.thread_id = content["thread_id"]
-                    self.logger.info(f"Started new thread with ID {self.thread_id}")
+                    self.logger.info(f"Started new thread with ID {self.thread_id}.")
                 continue
             elif variant == "Code":
                 message, code_content, code_started = self._process_code_chunk(

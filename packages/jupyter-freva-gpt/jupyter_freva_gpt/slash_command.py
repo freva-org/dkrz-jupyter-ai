@@ -4,12 +4,12 @@ import os
 from jupyter_ai.chat_handlers.base import BaseChatHandler, SlashCommandRoutingType
 from jupyter_ai.models import HumanChatMessage
 from langchain_core.utils import get_from_env
-from py_oidc_auth_client import DeviceFlow
+from py_oidc_auth_client import DeviceFlow, TokenStore, Token
 from traitlets.config import Application
 
 from ._client import AsyncClient
 
-fallback_base_url = "https://nextgems.dkrz.de/"
+fallback_host = "https://nextgems.dkrz.de/"
 logger = Application.instance().log
 
 
@@ -27,10 +27,10 @@ class DocsSlashCommand(BaseChatHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         lm_provider_params = self.config_manager.lm_provider_params
-        base_url = fallback_base_url
+        host = fallback_host
         if lm_provider_params:
-            base_url = self.config_manager.lm_provider_params.get("base_url", fallback_base_url)
-        api_url = f"{base_url}/api/chatbot"
+            host = self.config_manager.lm_provider_params.get("host", fallback_host)
+        api_url = f"{host}/api/chatbot"
         self.client: AsyncClient = AsyncClient(host=api_url, timeout=5)
 
     async def process_message(self, message: HumanChatMessage):
@@ -53,16 +53,17 @@ class LoginSlashCommand(BaseChatHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         lm_provider_params = self.config_manager.lm_provider_params
-        base_url = fallback_base_url
+        self.host = fallback_host
         if lm_provider_params:
-            base_url = lm_provider_params.get("base_url", fallback_base_url)
-        auth_url = f"{base_url}/api/freva-nextgen"
+            self.host = lm_provider_params.get("host", fallback_host)
+        auth_url = f"{self.host}/api/freva-nextgen"
         self.device_flow = DeviceFlow(host=auth_url, interactive=False, timeout=120)
-        self.freva_token_file = get_from_env(
+        token_store_path = get_from_env(
             key="freva_token_file",
             env_key="FREVA_TOKEN_FILE",
-            default=f"{os.path.join(os.path.expanduser('~'), '.freva_token.json')}",
+            default="",
         )
+        self.freva_token_store = TokenStore(token_store_path)
 
     async def process_message(self, message: HumanChatMessage):
         code = await self.device_flow.get_device_code()
@@ -70,11 +71,10 @@ class LoginSlashCommand(BaseChatHandler):
         self.reply(response=f"Click [here]({uri}) to log in.", human_msg=message)
         with self.pending("Waiting for login to complete", message) as pending_message:
             try:
-                token_dict: dict = await self.device_flow.poll(
+                token: Token = await self.device_flow.poll(
                     device_code=code["device_code"], interval=code["interval"]
                 )
-                with open(self.freva_token_file, "w") as f:
-                    json.dump(token_dict, f)
+                self.freva_token_store.put(host=self.host, token=token)
                 response = "Login successful! You can now use the FrevaGPT provider."
 
             except Exception as e:
