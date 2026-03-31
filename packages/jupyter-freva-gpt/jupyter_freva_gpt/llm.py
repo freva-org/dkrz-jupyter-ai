@@ -75,7 +75,7 @@ class FrevaChat(BaseChatModel):
             default="",
         )
         # load host or set it to default if not part of values
-        values["host"] = values["host"] or default_host
+        values["host"] = values.get("host", default_host)
         # load token store
         token_store = TokenStore(token_store_path)
         values["freva_token_store"] = token_store
