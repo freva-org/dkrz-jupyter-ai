@@ -1,11 +1,11 @@
 import json
 import os
 
-from py_oidc_auth_client import DeviceFlow
 from jupyter_ai.chat_handlers.base import (BaseChatHandler,
                                            SlashCommandRoutingType)
 from jupyter_ai.models import HumanChatMessage
 from langchain_core.utils import get_from_env
+from py_oidc_auth_client import DeviceFlow
 from traitlets.config import Application
 
 from ._client import Client

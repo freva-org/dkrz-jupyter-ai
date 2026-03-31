@@ -12,15 +12,15 @@ from typing import Any, AsyncIterator, ClassVar, Dict, List, Optional
 
 import aiofiles
 import nest_asyncio
-from py_oidc_auth_client import authenticate
-from py_oidc_auth_client.exceptions import AuthError
 from langchain_core.callbacks.manager import CallbackManagerForLLMRun
 from langchain_core.language_models.chat_models import (BaseChatModel,
                                                         agenerate_from_stream)
-from langchain_core.messages import (AIMessage, AIMessageChunk, BaseMessage)
+from langchain_core.messages import AIMessage, AIMessageChunk, BaseMessage
 from langchain_core.outputs import (ChatGeneration, ChatGenerationChunk,
                                     ChatResult)
 from langchain_core.utils import convert_to_secret_str, get_from_env
+from py_oidc_auth_client import authenticate
+from py_oidc_auth_client.exceptions import AuthError
 from pydantic import Field, SecretStr, model_validator
 from traitlets.config import Application
 
