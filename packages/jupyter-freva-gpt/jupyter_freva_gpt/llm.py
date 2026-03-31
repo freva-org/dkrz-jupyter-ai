@@ -1,4 +1,5 @@
 
+import asyncio
 import json
 import logging
 import os
@@ -7,25 +8,26 @@ import time
 import urllib.parse
 from datetime import datetime
 from pathlib import Path
-from typing import Any, AsyncIterator, ClassVar, Dict, Iterator, List, Optional
+from typing import Any, AsyncIterator, ClassVar, Dict, List, Optional
 
 import aiofiles
-import freva_client
-from freva_client.utils.auth_utils import AuthError
+import nest_asyncio
+from py_oidc_auth_client import authenticate
+from py_oidc_auth_client.exceptions import AuthError
 from langchain_core.callbacks.manager import CallbackManagerForLLMRun
 from langchain_core.language_models.chat_models import (BaseChatModel,
-                                                        agenerate_from_stream,
-                                                        generate_from_stream)
-from langchain_core.messages import (AIMessage, AIMessageChunk, BaseMessage,
-                                     ChatMessageChunk)
+                                                        agenerate_from_stream)
+from langchain_core.messages import (AIMessage, AIMessageChunk, BaseMessage)
 from langchain_core.outputs import (ChatGeneration, ChatGenerationChunk,
                                     ChatResult)
 from langchain_core.utils import convert_to_secret_str, get_from_env
 from pydantic import Field, SecretStr, model_validator
 from traitlets.config import Application
 
-from ._client import AsyncClient, Client
+from ._client import AsyncClient
 from ._types import BasePrompt, Message
+
+nest_asyncio.apply()
 
 default_user = os.environ["USER"] if "USER" in os.environ.keys() else "test-user"
 class FrevaChat(BaseChatModel):
@@ -34,8 +36,7 @@ class FrevaChat(BaseChatModel):
     base_url:str = Field(default="https://nextgems.dkrz.de")
     user_id:str = Field(default=default_user)
     client_kwargs : Optional[Dict] = {}
-    client: Client = Field(default=None)
-    aclient: AsyncClient = Field(default=None)
+    client: AsyncClient = Field(default=None)
     stop: str = Field(default="Generation complete")
     thread_id: str = Field(default=None)
     freva_token_file: str = Field(default=None)
@@ -96,8 +97,7 @@ class FrevaChat(BaseChatModel):
     @model_validator(mode="after")
     def _validate_token(self) -> Dict:
         if self.disable_auth: 
-            self.client = Client(host=f"{self.base_url}/api/chatbot", **self.client_kwargs)
-            self.aclient = AsyncClient(host=f"{self.base_url}/api/chatbot", **self.client_kwargs)
+            self.client = AsyncClient(host=f"{self.base_url}/api/chatbot", **self.client_kwargs)
             return self
         token_expires_at = datetime.fromtimestamp(self.freva_token_dict["expires"])
         token_refresh_expires_at = datetime.fromtimestamp(self.freva_token_dict["refresh_expires"])
@@ -107,23 +107,21 @@ class FrevaChat(BaseChatModel):
         elif now > token_expires_at:
             self.logger.warning(f"Freva auth token expired. Using refresh token to generate new token and writing it to file {self.freva_token_file}.")
             try:
-                Auth = freva_client.auth.Auth(token_file=self.freva_token_file or None)
-                self.freva_token_dict=Auth.authenticate(
-                    host=self.base_url,
-                    force=False,
+                self.freva_token_dict=authenticate(
+                    host=f"{self.base_url}/api/freva-nextgen",
+                    store=self.freva_token_file or None
                 )
                 self.freva_auth_token = convert_to_secret_str(self.freva_token_dict["access_token"])
                 with open(self.freva_token_file, mode="w") as fw:
                     json.dump(self.freva_token_dict, fw)
-            except:
-                raise AuthError("Could not generate a new token from the token file. Please try again or reauthenticate.") from None
+            except Exception as e:
+                raise AuthError(f"Could not generate a new token from the token file. Please try again or reauthenticate. {e}") from None
         self.client_kwargs = {
             "headers": {
                 "Authorization": f"Bearer {self.freva_auth_token.get_secret_value()}"
             }
         }
-        self.client = Client(host=f"{self.base_url}/api/chatbot", **self.client_kwargs)
-        self.aclient = AsyncClient(host=f"{self.base_url}/api/chatbot", **self.client_kwargs)
+        self.client = AsyncClient(host=f"{self.base_url}/api/chatbot", **self.client_kwargs)
         return self
         
     def _reset(self) -> None:
@@ -186,103 +184,7 @@ class FrevaChat(BaseChatModel):
     **kwargs: Any,
     ) -> ChatResult:
         self.logger.debug("Called _generate")
-        try:
-            stream = self._stream(prompt, stop, run_manager, **kwargs)
-            chat_result: ChatResult = generate_from_stream(stream)
-        except ConnectionError as e:
-            if e.errno == 409:
-                self.logger.warning(
-                        (
-                        f"Encountered 409 Connection Conflict Error: {e.strerror}. ",
-                        "Creating a new thread and trying again..."
-                        )
-                )
-                self.thread_id=None
-                stream = self._stream(prompt, stop, run_manager, **kwargs)
-                chat_result: ChatResult = generate_from_stream(stream)
-            else:
-                raise e from None
-        return chat_result 
-        
-    def _stream(
-        self,
-        messages: List[BaseMessage],
-        stop: Optional[List[str]] = None,
-        run_manager: Optional[CallbackManagerForLLMRun] = None,
-        **kwargs: Any,
-    ) -> Iterator[ChatMessageChunk]:
-        
-        # check that auth token is still valid (refresh otherwise)
-        self._validate_token()
-        
-        prompt = BasePrompt(messages=[BaseMessage(content=message.content, type=message.type) for message in messages])._format_messages_for_chat()
-        # remove any image strings from the prompt to reduce number of tokens drastically
-        prompt = re.sub(
-                        r"\(data:image/png.*",
-                        "('an image was successfully generated')",
-                        prompt
-        )
-        self.logger.debug(f"Calling _stream with prompt: {prompt}")
-
-        if self.debug:
-            with open(
-                file=f"{Path(__file__).parent}/example_conversation.json") as fo:
-                    stream=json.load(fo)
-        else:
-            self.logger.debug(f"Sending request to /streamresponse with following params input={prompt}, chatbot={self.model_id}, thread_id={self.thread_id}, user={self.user_id}")
-            params = {
-                    "input":prompt,  
-                    "chatbot":self.model_id or "",
-                    "thread_id":self.thread_id or "",
-                    "user_id": self.user_id or "",
-            }
-            url = f"streamresponse?{urllib.parse.urlencode(params, quote_via=urllib.parse.quote)}"
-            stream=self.client.request(
-                method="GET", 
-                url=url, 
-                stream=True, 
-            )
-        code_started=False
-        image_started=False
-        code_content=""
-        for part in stream:
-            content = part["content"][0] if isinstance(part["content"], list) else part["content"]
-            variant = part["variant"]
-            if variant!="Image" and image_started:
-                message=Message(
-                    variant="Image", 
-                    content=f'\n\n ![alt text](data:image/png;base64,{base64_string})\n\n'
-                )
-                image_started=False
-                base64_string=""
-                yield self._translate_to_chat_generation_chunk(message)
-            if variant=="ServerHint":
-                if not self.thread_id and "thread_id" in content.keys(): 
-                    self.thread_id = content["thread_id"]
-                    self.logger.info(f"Started new thread with ID {self.thread_id}")
-                continue
-            elif variant=="Code":
-                message, code_content, code_started=self._process_code_chunk(content, code_content, code_started)
-                if not message:
-                    continue
-            elif variant=="CodeOutput":
-                message=Message(
-                        variant="CodeOutput",
-                        content="\n```\n" +content+"\n```\n"
-                )
-            elif variant=="Image":
-                if not image_started:
-                    base64_string=content
-                    image_started=True
-                    continue
-                base64_string+=content
-            elif variant=="Assistant":
-                message=Message(**part)
-            elif variant=="StreamEnd":
-                break
-            else:
-                continue
-            yield self._translate_to_chat_generation_chunk(message)
+        return asyncio.run(self._agenerate(prompt, stop, run_manager, **kwargs))
 
     async def _agenerate(
         self,
@@ -332,6 +234,12 @@ class FrevaChat(BaseChatModel):
                             stream=AsyncList(json.loads(await fo.read()))
             else:
                 thread_id = kwargs.get("thread_id", self.thread_id)
+                if not thread_id:
+                    thread_id = await self.client.request(
+                        method="GET",
+                        url = "newthread",
+                        stream = False
+                    )
                 self.logger.debug(f"Sending request to /streamresponse with following params input={prompt}, chatbot={self.model_id}, thread_id={thread_id}, user={self.user_id}")
                 params = {
                         "input":prompt,  
@@ -340,7 +248,7 @@ class FrevaChat(BaseChatModel):
                         "user_id": self.user_id or "",
                 }
                 url = f"streamresponse?{urllib.parse.urlencode(params, quote_via=urllib.parse.quote)}"
-                stream = await self.aclient.request(
+                stream = await self.client.request(
                     method="GET", 
                     url=url, 
                     stream=True, 

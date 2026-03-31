@@ -1,15 +1,17 @@
 import json
 import os
 
-from freva_client.utils.auth_utils import DeviceAuthClient
+from py_oidc_auth_client import DeviceFlow
 from jupyter_ai.chat_handlers.base import (BaseChatHandler,
                                            SlashCommandRoutingType)
 from jupyter_ai.models import HumanChatMessage
 from langchain_core.utils import get_from_env
+from traitlets.config import Application
 
 from ._client import Client
 
 fallback_base_url = "https://nextgems.dkrz.de/"
+logger = Application.instance().log
 
 class DocsSlashCommand(BaseChatHandler):
     """
@@ -57,12 +59,8 @@ class LoginSlashCommand(BaseChatHandler):
                                             "base_url",
                                             fallback_base_url
         )
-        auth_url = f"{base_url}/api/freva-nextgen/auth/v2"
-        device_endpoint = f"{auth_url}/device?offline_access=True"
-        token_endpoint = f"{auth_url}/token"
-        self.device_auth_client = DeviceAuthClient(token_endpoint=token_endpoint,
-                                                   device_endpoint=device_endpoint,
-        )
+        auth_url = f"{base_url}/api/freva-nextgen"
+        self.device_flow = DeviceFlow(host=auth_url, interactive=False, timeout=120)
         self.freva_token_file = get_from_env(
             key="freva_token_file",
             env_key="FREVA_TOKEN_FILE",
@@ -70,21 +68,22 @@ class LoginSlashCommand(BaseChatHandler):
         )
 
     async def process_message(self, message: HumanChatMessage):
-        init=self.device_auth_client._authorize()
-        uri = init.get("verification_uri_complete") or init["verification_uri"]
+        code = await self.device_flow.get_device_code()
+        uri = code["uri"]
         self.reply(response=f"Click [here]({uri}) to log in.", human_msg=message)
         with self.pending("Waiting for login to complete", message) as pending_message:
             try:
-                token_dict: dict = self.device_auth_client._poll_for_token(
-                                                        device_code=init["device_code"], 
-                                                        base_interval=int(init.get("interval", 5))
+                token_dict: dict = await self.device_flow.poll(
+                                                        device_code=code["device_code"], 
+                                                        interval=code["interval"]
                 )
                 with open(self.freva_token_file, "w") as f:
                     json.dump(token_dict, f)
                 response = "Login successful! You can now use the FrevaGPT provider."
                 
-            except Exception:
+            except Exception as e:
                 response = "Error encountered during login. Please try again later."
+                logger.error(f"Error encountered during login: {e}")
             self.reply(response=response, human_msg=message)
 
     async def handle_exc(self, e: Exception, message: HumanChatMessage):
