@@ -12,9 +12,10 @@ from typing import Any, List, Mapping, Optional, Tuple, Union
 import httpx
 
 try:
-  __version__ = metadata.version('jupyter_freva_gpt')
+    __version__ = metadata.version("jupyter_freva_gpt")
 except metadata.PackageNotFoundError:
-  __version__ = '0.0.0'
+    __version__ = "0.0.0"
+
 
 class AsyncClient:
     def __init__(
@@ -32,8 +33,8 @@ class AsyncClient:
         - `timeout`: None
         `kwargs` are passed to the httpx client.
         """
-        
-        base_url = _parse_host(host or os.getenv("FREVAGPT_HOST"))
+
+        base_url = _parse_host(host or os.getenv("FREVAGPT_HOST", ""))
         self._client = httpx.AsyncClient(
             base_url=base_url,
             follow_redirects=follow_redirects,
@@ -42,13 +43,13 @@ class AsyncClient:
             headers={
                 k.lower(): v
                 for k, v in {
-                **(headers or {}),
-                "Content-Type": "application/json",
-                'Accept': "application/json",
-                "User-Agent": f"frevagpt-python/{__version__} ({platform.machine()} {platform.system().lower()}) Python/{platform.python_version()}",
-                "X-Freva-Vault-URL": f"{base_url}:5002",
-                "X-Freva-Rest-URL": f"{base_url}:7777",
-                "X-Freva-Config-Path": "/opt/freva/core/freva/evaluation_system.conf",
+                    **(headers or {}),
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                    "User-Agent": f"frevagpt-python/{__version__} ({platform.machine()} {platform.system().lower()}) Python/{platform.python_version()}",
+                    "X-Freva-Vault-URL": f"{base_url}:5002",
+                    "X-Freva-Rest-URL": f"{base_url}:7777",
+                    "X-Freva-Config-Path": "/opt/freva/core/freva/evaluation_system.conf",
                 }.items()
             },
             **kwargs,
@@ -62,13 +63,19 @@ class AsyncClient:
                 r.raise_for_status()
             except httpx.HTTPStatusError as e:
                 e.response.aread()
-                raise ConnectionError(e.response.status_code, f"Error connecting to url {_parse_host(e.request.url)} with error: {e.response.text}") from None
+                raise ConnectionError(
+                    e.response.status_code,
+                    f"Error connecting to url {_parse_host(e.request.url)} with error: {e.response.text}",
+                ) from None
         except httpx.ConnectError as e:
-            raise ConnectionError(101, f"Failed to connect to {_parse_host(e.request.url)}. Please try again." ) from None
+            raise ConnectionError(
+                101, f"Failed to connect to {_parse_host(e.request.url)}. Please try again."
+            ) from None
         return r
-    
+
     async def request(self, *args, stream=False, **kwargs):
         if stream:
+
             async def inner():
                 try:
                     async with self._client.stream(*args, **kwargs) as r:
@@ -76,31 +83,44 @@ class AsyncClient:
                             r.raise_for_status()
                         except httpx.HTTPStatusError as e:
                             await e.response.aread()
-                            raise ConnectionError(e.response.status_code, f"Error connecting to url {_parse_host(e.request.url)} with error: {e.response.text}") from None
+                            raise ConnectionError(
+                                e.response.status_code,
+                                f"Error connecting to url {_parse_host(e.request.url)} with error: {e.response.text}",
+                            ) from None
                         complete_parts, partial_response = [], ""
                         async for chunk in r.aiter_bytes():
                             chunk_decoded = chunk.decode("utf-8")
-                            complete_parts, partial_response = _process_chunks(chunk_decoded, partial_response)
+                            complete_parts, partial_response = _process_chunks(
+                                chunk_decoded, partial_response
+                            )
                             if complete_parts:
                                 for part in complete_parts:
                                     yield part
                 except httpx.ConnectError as e:
-                    raise ConnectionError(101, f"Failed to connect to url {_parse_host(e.request.url)}. Please try again." ) from None
-            return inner()
+                    raise ConnectionError(
+                        101,
+                        f"Failed to connect to url {_parse_host(e.request.url)}. Please try again.",
+                    ) from None
+
+            result = inner()
         else:
             try:
                 r = await self._request_raw(*args, **kwargs)
                 complete_parts, _ = _process_chunks(r.text)
                 if complete_parts:
-                    return complete_parts[0]
+                    result = complete_parts[0]
                 else:
-                    return r.json()
+                    result = r.json()
             except JSONDecodeError:
                 self.logger.warning(
-                    ("Encountered error when trying to decode the request from JSON.  Returning text instead.")
+                    (
+                        "Encountered error when trying to decode the request from JSON.  Returning text instead."
+                    )
                 )
-                return r.text
-    
+                result = r.text
+        return result
+
+
 def _process_chunks(chunk: str, partial_response: str = "") -> Tuple[List[dict], str]:
     """
     Processes a chunk of string data, which represent JSON-like objects split across chunks.
@@ -112,7 +132,7 @@ def _process_chunks(chunk: str, partial_response: str = "") -> Tuple[List[dict],
     Returns:
     Tuple[List[str], str]: A list of complete JSON-like objects and the partial string (if any).
     """
-    
+
     def recurse_dict(d: dict[str, Any]) -> dict[str, Any]:
         """
         Make sure that all (possibly escaped) json-strings within a dictionary are parsed as dicts
@@ -120,10 +140,11 @@ def _process_chunks(chunk: str, partial_response: str = "") -> Tuple[List[dict],
         for key, value in d.items():
             if isinstance(value, str):
                 if value.startswith("{") and value.endswith("}"):
-                    d[key]=recurse_dict(json.loads(value))
+                    d[key] = recurse_dict(json.loads(value))
         return d
+
     # sanitize input string
-    chunk = chunk.strip().replace("\n","")
+    chunk = chunk.strip().replace("\n", "")
     # check that chunk is not empty
     if not chunk:
         return [], partial_response
@@ -134,25 +155,25 @@ def _process_chunks(chunk: str, partial_response: str = "") -> Tuple[List[dict],
         # Case 1: The chunk starts with "{" and ends with "}" (a complete JSON object)
         if chunk[0] == "{" and chunk[-1] == "}":
             return [recurse_dict(json.loads(chunk))], ""
-        
+
         # Case 2: The chunk starts with "{" but does not end with "}" (partial JSON object)
         elif chunk[0] == "{" and chunk[-1] != "}":
             partial_response = chunk  # Save the partial object for later
             return [], partial_response
-        
+
         # Case 3: The chunk ends with "}" but does not start with "{" (completes a partial JSON object)
         elif chunk[-1] == "}":
             partial_response += chunk  # Append to the saved partial object
             return [recurse_dict(json.loads(partial_response))], ""  # Return the completed object
-        
+
         # Case 4: Neither starts with "{" nor ends with "}" (still an incomplete JSON object)
         else:
             partial_response += chunk  # Append to the saved partial object
             return [], partial_response
-    
+
     # If there are multiple parts after splitting, handle them as potential JSON objects
     else:
-        complete_parts = [] 
+        complete_parts = []
 
         for i, part in enumerate(chunk_split):
             if i == 0:
@@ -160,9 +181,11 @@ def _process_chunks(chunk: str, partial_response: str = "") -> Tuple[List[dict],
                 # Check if it is a continuation of a partial response
                 if part[0] != "{":
                     partial_response += fixed_part  # Append to the saved partial object
-                    complete_parts.append(recurse_dict(json.loads(partial_response)))  # Add the completed object to the list
+                    complete_parts.append(
+                        recurse_dict(json.loads(partial_response))
+                    )  # Add the completed object to the list
                     continue
-            
+
             elif i == len(chunk_split) - 1:
                 fixed_part = "{" + part  # Add opening brace to make it a complete object
                 # If it is still incomplete, save it as the new partial response
@@ -172,40 +195,44 @@ def _process_chunks(chunk: str, partial_response: str = "") -> Tuple[List[dict],
                 # If it is complete, add to the list and clear partial response
                 complete_parts.append(recurse_dict(json.loads(fixed_part)))
                 return complete_parts, ""
-            
+
             else:
-                fixed_part = "{" + part + "}" 
-                
+                fixed_part = "{" + part + "}"
+
             complete_parts.append(recurse_dict(json.loads(fixed_part)))
 
+
 def _parse_host(host: Union[str, httpx.URL]):
-    host=str(host)
-    host, port = host or '', 11434
-    scheme, _, hostport = host.partition('://')
+    host = str(host)
+    host, port = host or "", 11434
+    scheme, _, hostport = host.partition("://")
     if not hostport:
-        scheme, hostport = 'http', host
-    elif scheme == 'http':
+        scheme, hostport = "http", host
+    elif scheme == "http":
         port = 80
-    elif scheme == 'https':
+    elif scheme == "https":
         port = 443
 
-    split = urllib.parse.urlsplit('://'.join([scheme, hostport]))
-    host = split.hostname or '127.0.0.1'
+    split = urllib.parse.urlsplit("://".join([scheme, hostport]))
+    host = split.hostname or "127.0.0.1"
     port = split.port or port
 
     try:
         if isinstance(ipaddress.ip_address(host), ipaddress.IPv6Address):
             # Fix missing square brackets for IPv6 from urlsplit
-            host = f'[{host}]'
+            host = f"[{host}]"
     except ValueError:
         try:
-            socket.gethostbyname(host)    
+            socket.gethostbyname(host)
         except socket.gaierror:
             raise ConnectionError(
-                (f"Temporary failure in name resolution of host {host}. "
-                "Make sure host is reachable."))
+                (
+                    f"Temporary failure in name resolution of host {host}. "
+                    "Make sure host is reachable."
+                )
+            )
 
-    if path := split.path.strip('/'):
-        return f'{scheme}://{host}:{port}/{path}'
+    if path := split.path.strip("/"):
+        return f"{scheme}://{host}:{port}/{path}"
 
-    return f'{scheme}://{host}:{port}'
+    return f"{scheme}://{host}:{port}"

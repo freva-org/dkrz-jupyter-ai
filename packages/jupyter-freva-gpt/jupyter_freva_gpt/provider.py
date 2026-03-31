@@ -1,21 +1,25 @@
 from typing import ClassVar, Dict, List
 
 from jupyter_ai_magics import BaseProvider, Persona
-from jupyter_ai_magics.base_provider import (CHAT_SYSTEM_PROMPT,
-                                             HUMAN_MESSAGE_TEMPLATE)
-from langchain.prompts import (ChatPromptTemplate, HumanMessagePromptTemplate,
-                               PromptTemplate, SystemMessagePromptTemplate)
+from jupyter_ai_magics.base_provider import CHAT_SYSTEM_PROMPT, HUMAN_MESSAGE_TEMPLATE
+from langchain.prompts import (
+    ChatPromptTemplate,
+    HumanMessagePromptTemplate,
+    PromptTemplate,
+    SystemMessagePromptTemplate,
+)
 
 from .available_backends import available_backends
 from .llm import AuthError, FrevaChat
 
 # path to freva avatar on the jupyter server
-FREVAGPT_AVATAR_ROUTE = "api/ai/static/freva_avatar.svg" 
+FREVAGPT_AVATAR_ROUTE = "api/ai/static/freva_avatar.svg"
 # Persona instance for the provider
 FrevaGPTPersona = Persona(name="FrevaGPT", avatar_route=FREVAGPT_AVATAR_ROUTE)
 
 # option to force default model
 force_default = False
+
 
 class FrevaGPTProvider(BaseProvider, FrevaChat):
     """
@@ -37,7 +41,7 @@ class FrevaGPTProvider(BaseProvider, FrevaChat):
     model_id_label: ClassVar[str] = "Model ID"
     """Human-readable label of the model ID."""
 
-    manages_history: ClassVar[bool] = True 
+    manages_history: ClassVar[bool] = True
     """Whether this provider manages its own conversation history upstream. """
 
     persona: ClassVar[Persona] = FrevaGPTPersona
@@ -54,42 +58,41 @@ class FrevaGPTProvider(BaseProvider, FrevaChat):
     """List of PyPi package dependencies."""
 
     custom_prompt_templates: Dict[str, str] = {
-        "code": 
-                "{prompt}\n\nProduce output as source code only, "
-                "with no text or explanation before or after it. "
-                "Strictly under no circumstances execute the code."
-                "Repeat, do NOT execute or run the code."
+        "code": "{prompt}\n\nProduce output as source code only, "
+        "with no text or explanation before or after it. "
+        "Strictly under no circumstances execute the code."
+        "Repeat, do NOT execute or run the code."
     }
 
     @property
     def allows_concurrency(self):
         # supports concurrent messages
         return True
-    
+
     @classmethod
-    def is_not_auth_exc(cls, e:Exception):
+    def is_not_auth_exc(cls, e: Exception):
         # indicates if a given exception falls within authentication scope
         if isinstance(e, AuthError):
             return True
         return False
-    
+
     def get_prompt_template(self, format) -> PromptTemplate:
         # overrides some of the default prompt templates
         if format in self.custom_prompt_templates:
             template = self.custom_prompt_templates[format]
             super().update_prompt_template(format, template)
         return super().get_prompt_template(format)
-    
+
     def get_chat_prompt_template(self):
         name = self.__class__.name
         return ChatPromptTemplate.from_messages(
-                [
-                    SystemMessagePromptTemplate.from_template(
-                        CHAT_SYSTEM_PROMPT
-                    ).format(provider_name=name, local_model_id=self.model_id),
-                    HumanMessagePromptTemplate.from_template(
-                        HUMAN_MESSAGE_TEMPLATE,
-                        template_format="jinja2",
-                    ),
-                ]
-            )
+            [
+                SystemMessagePromptTemplate.from_template(CHAT_SYSTEM_PROMPT).format(
+                    provider_name=name, local_model_id=self.model_id
+                ),
+                HumanMessagePromptTemplate.from_template(
+                    HUMAN_MESSAGE_TEMPLATE,
+                    template_format="jinja2",
+                ),
+            ]
+        )
