@@ -78,7 +78,7 @@ class AiExtension(ExtensionApp):
 
     allowed_providers = List(
         Unicode(),
-        default_value=None,
+        default_value=["FrevaGPT"],
         help="Identifiers of allowlisted providers. If `None`, all are allowed.",
         allow_none=True,
         config=True,
@@ -141,7 +141,7 @@ class AiExtension(ExtensionApp):
     )
 
     default_language_model = Unicode(
-        default_value=None,
+        default_value="FrevaGPT:gpt-4.1",
         allow_none=True,
         help="""
         Default language model to use, as string in the format
