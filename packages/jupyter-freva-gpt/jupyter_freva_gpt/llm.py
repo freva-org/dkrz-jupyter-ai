@@ -267,15 +267,14 @@ class FrevaChat(BaseChatModel):
             elif variant == "CodeOutput":
                 message = Message(variant="CodeOutput", content="\n```\n" + content + "\n```\n")
             elif variant == "Image":
-                if not image_started:
-                    base64_string = content
-                    image_started = True
-                    continue
                 base64_string += content
+                image_started = True
+                continue
             elif variant == "Assistant":
                 message = Message(**part)
             elif variant == "StreamEnd":
                 break
             else:
                 continue
+            message.content = message.content.replace('\\"', '"')
             yield self._translate_to_chat_generation_chunk(message)
