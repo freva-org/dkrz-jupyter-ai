@@ -54,7 +54,7 @@ class FrevaGPTProvider(BaseProvider, FrevaChat):
     provider is selected.
     """
 
-    pypi_package_deps: ClassVar[List[str]] = ["freva_client"]
+    pypi_package_deps: ClassVar[List[str]] = []
     """List of PyPi package dependencies."""
 
     custom_prompt_templates: Dict[str, str] = {
