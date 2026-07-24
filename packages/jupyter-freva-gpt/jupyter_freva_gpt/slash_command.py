@@ -63,7 +63,10 @@ class LoginSlashCommand(BaseChatHandler):
             env_key="FREVA_TOKEN_FILE",
             default="",
         )
-        self.freva_token_store = TokenStore(token_store_path)
+        self.freva_token_store = TokenStore(
+                                    path=token_store_path,
+                                    app_name="freva-gpt-client"
+        )
 
     async def process_message(self, message: HumanChatMessage):
         code = await self.device_flow.get_device_code()
