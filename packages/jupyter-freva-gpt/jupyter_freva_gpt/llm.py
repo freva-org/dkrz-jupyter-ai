@@ -16,11 +16,10 @@ from langchain_core.callbacks.manager import CallbackManagerForLLMRun
 from langchain_core.language_models.chat_models import BaseChatModel, agenerate_from_stream
 from langchain_core.messages import AIMessage, AIMessageChunk, BaseMessage
 from langchain_core.outputs import ChatGeneration, ChatGenerationChunk, ChatResult
-from py_oidc_auth_client import AuthError
 from pydantic import Field, computed_field
 from traitlets.config import Application
 
-from freva_gpt_client import AsyncFrevaGPT
+from climateclaw_client import AsyncClimateClaw
 from ._types import BasePrompt, Message
 
 nest_asyncio.apply()
@@ -28,7 +27,7 @@ nest_asyncio.apply()
 default_user = os.environ["USER"] if "USER" in os.environ.keys() else "test-user"
 default_host = "https://nextgems.dkrz.de"
 
-class FrevaChat(BaseChatModel):
+class ClimateClaw(BaseChatModel):
 
     model_id: str
     host: str = Field(default=default_host)
@@ -41,15 +40,16 @@ class FrevaChat(BaseChatModel):
 
     @computed_field
     @cached_property
-    def client(self) -> AsyncFrevaGPT:
-        return AsyncFrevaGPT(
+    def client(self) -> AsyncClimateClaw:
+        return AsyncClimateClaw(
             base_url=self.host,
             thread_id=self.thread_id,
+            interactive_auth=False,
         )
 
     @property
     def _llm_type(self) -> str:
-        return "Freva-GPT"
+        return "ClimateClaw"
 
     def _reset(self) -> None:
         self.client.thread_id = None
@@ -118,25 +118,20 @@ class FrevaChat(BaseChatModel):
             thread_id = self.client.thread_id
             if not thread_id: 
                 thread_id = await self.client.newthread()
-            self.logger.debug(
-                f"Sending request to /streamresponse with following params input={prompt}, chatbot={self.model_id}, thread_id={thread_id}, user={self.user_id}"
-            )
             params = {
                 "input": prompt,
-                "chatbot": self.model_id,
+                "model": self.model_id,
                 "thread_id": thread_id,
-                "user_id": self.user_id,
                 "store_thread": False,
             }
-            print("params", params)
-            stream = await self.client.prompt(
-                input = prompt,
-                model = self.model_id,
-                thread_id = thread_id,
-                store_thread = False,
-                stream = True
+            self.logger.debug(
+                "Sending request to /streamresponse with following params: " \
+                    + ", ".join(f"{key}={value}" for key,value in params.items())
             )
-        async for part in stream.aiter_for_markdown():
-            variant, content = part
+            stream = await self.client.prompt(
+                stream = True,
+                **params
+            )
+        async for variant, content in stream.aiter_for_markdown():
             message = Message(variant=variant, content = content)
             yield self._translate_to_chat_generation_chunk(message)

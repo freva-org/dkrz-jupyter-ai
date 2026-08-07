@@ -9,27 +9,29 @@ from langchain.prompts import (
     SystemMessagePromptTemplate,
 )
 
-from .available_backends import available_backends
-from .llm import AuthError, FrevaChat
+from py_oidc_auth_client import AuthError
 
-# path to freva avatar on the jupyter server
-FREVAGPT_AVATAR_ROUTE = "api/ai/static/freva_avatar.svg"
+from .available_backends import available_backends
+from .llm import ClimateClaw
+
+# path to climateclaw avatar on the jupyter server
+CLIMATECLAW_AVATAR_ROUTE = "api/ai/static/climateclaw_avatar.svg"
 # Persona instance for the provider
-FrevaGPTPersona = Persona(name="FrevaGPT", avatar_route=FREVAGPT_AVATAR_ROUTE)
+ClimateClawPersona = Persona(name="ClimateClaw", avatar_route=CLIMATECLAW_AVATAR_ROUTE)
 
 # option to force default model
 force_default = False
 
 
-class FrevaGPTProvider(BaseProvider, FrevaChat):
+class ClimateClawProvider(BaseProvider, ClimateClaw):
     """
-    Implementation of the Freva-GPT provider interface to the Freva-GPT backend for Jupyter AI.
+    Implementation of the ClimateClaw provider interface to the ClimateClaw backend for Jupyter AI.
     """
 
-    id: ClassVar[str] = "FrevaGPT"
+    id: ClassVar[str] = "ClimateClaw"
     """ID for this provider class."""
 
-    name: ClassVar[str] = "Freva GPT Provider"
+    name: ClassVar[str] = "ClimateClaw Provider"
     """User-facing name of this provider."""
 
     models: ClassVar[List[str]] = [available_backends[0]] if force_default else available_backends
@@ -44,7 +46,7 @@ class FrevaGPTProvider(BaseProvider, FrevaChat):
     manages_history: ClassVar[bool] = True
     """Whether this provider manages its own conversation history upstream. """
 
-    persona: ClassVar[Persona] = FrevaGPTPersona
+    persona: ClassVar[Persona] = ClimateClawPersona
     """The **persona** of this provider."""
 
     unsupported_slash_commands: ClassVar[set] = set(("/learn", "/ask"))

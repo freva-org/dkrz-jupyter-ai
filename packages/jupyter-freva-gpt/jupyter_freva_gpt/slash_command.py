@@ -7,7 +7,7 @@ from langchain_core.utils import get_from_env
 from py_oidc_auth_client import DeviceFlow, TokenStore, Token
 from traitlets.config import Application
 
-from ._client import AsyncClient
+from climateclaw_client import AsyncClimateClaw
 
 fallback_host = "https://nextgems.dkrz.de/"
 logger = Application.instance().log
@@ -30,8 +30,8 @@ class DocsSlashCommand(BaseChatHandler):
         host = fallback_host
         if lm_provider_params:
             host = self.config_manager.lm_provider_params.get("host", fallback_host)
-        api_url = f"{host}/api/chatbot"
-        self.client: AsyncClient = AsyncClient(host=api_url, timeout=5)
+        api_url = f"{host}"
+        self.client: AsyncClimateClaw = AsyncClimateClaw(base_url=api_url, timeout=5)
 
     async def process_message(self, message: HumanChatMessage):
         self.reply(
@@ -65,7 +65,7 @@ class LoginSlashCommand(BaseChatHandler):
         )
         self.freva_token_store = TokenStore(
                                     path=token_store_path,
-                                    app_name="freva-gpt-client"
+                                    app_name="climateclaw-client"
         )
 
     async def process_message(self, message: HumanChatMessage):
