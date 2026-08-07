@@ -1,22 +1,23 @@
 {
   "name": "@jupyter-ai/monorepo",
   "version": "2.31.7",
-  "description": "A generative AI extension for JupyterLab",
+  "description": "A generative AI extension for JupyterLab (ClimateClaw fork)",
   "private": true,
   "keywords": [
     "jupyter",
     "jupyterlab",
-    "jupyterlab-extension"
+    "jupyterlab-extension",
+    "freva-gpt"
   ],
-  "homepage": "https://github.com/jupyterlab/jupyter-ai",
+  "homepage": "https://github.com/freva-org/freva-jupyter-ai/",
   "bugs": {
-    "url": "https://github.com/jupyterlab/jupyter-ai/issues",
-    "email": "jupyter@googlegroups.com"
+    "url": "https://github.com/freva-org/freva-jupyter-ai/issues",
+    "email": "freva@dkrz.de"
   },
   "license": "BSD-3-Clause",
   "author": {
-    "name": "Project Jupyter",
-    "email": "jupyter@googlegroups.com"
+    "name": "Freva",
+    "email": "freva@dkrz.de"
   },
   "workspaces": [
     ".",

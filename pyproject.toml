@@ -9,6 +9,7 @@ requires-python = ">=3.9"
 dependencies = [
   "jupyter-ai-magics @ {root:uri}/packages/jupyter-ai-magics",
   "jupyter-ai @ {root:uri}/packages/jupyter-ai",
+  "jupyter-freva-gpt @ {root:uri}/packages/jupyter-ai",
 ]
 
 [project.optional-dependencies]
@@ -26,7 +27,7 @@ source = "nodejs"
 path = "package.json"
 
 [tool.hatch.build]
-packages = ["packages/jupyter-ai-magics", "packages/jupyter-ai"]
+packages = ["packages/jupyter-ai-magics", "packages/jupyter-ai", "packages/freva-jupyter-ai"]
 
 [tool.hatch.metadata]
 allow-direct-references = true
