@@ -1,7 +1,7 @@
 {
-  "name": "@jupyter-ai/freva-gpt",
+  "name": "@jupyter-ai/climateclaw",
   "version": "0.4.0",
-  "description": "FrevaGPT package for Jupyter AI Python. Not published on NPM.",
+  "description": "ClimateClaw package for Jupyter AI Python. Not published on NPM.",
   "private": true,
   "homepage": "https://github.com/freva-org/freva-jupyter-ai",
   "bugs": {
@@ -19,7 +19,7 @@
   },
   "scripts": {
     "dev-install": "pip install -e \".\"",
-    "dev-uninstall": "pip uninstall jupyter_freva_gpt -y",
+    "dev-uninstall": "pip uninstall jupyter_climateclaw -y",
     "install-from-src": "pip install ."
   }
 }

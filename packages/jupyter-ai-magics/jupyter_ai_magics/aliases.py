@@ -7,5 +7,5 @@ MODEL_ID_ALIASES = {
     "ernie-bot-4": "qianfan:ERNIE-Bot-4",
     "titan": "bedrock:amazon.titan-tg1-large",
     "openrouter-claude": "openrouter:anthropic/claude-3.5-sonnet:beta",
-    "freva": "FrevaGPT:gpt-4.1"
+    "climateclaw": "ClimateClaw:gpt-4.1"
 }

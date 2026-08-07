@@ -64,7 +64,7 @@ For more specific instructions for each model provider, refer to [the model prov
 
 ## Installation
 
-### Building Freva-Jupyter-AI for local testing:
+### Building ClimateClaw-Jupyter-AI for local testing:
 1. Create build env using conda:
     ```
     conda create -n jupyter-ai -c conda-forge python=3.12 nodejs=20
@@ -80,19 +80,19 @@ For more specific instructions for each model provider, refer to [the model prov
 3. Start up a local jupyter lab server:
     ```bash
     jlpm dev \
-    --AiExtension.allowed_providers FrevaGPT \
+    --AiExtension.allowed_providers ClimateClaw \
     --AiExtension.allowed_providers X \
-    --AiExtension.default_language_model FrevaGPT:gpt-4.1 \
-    --AiExtension.model_parameters FrevaGPT='{"host":"https://nextgems.dkrz.de"}'
+    --AiExtension.default_language_model ClimateClaw:gpt-4.1 \
+    --AiExtension.model_parameters ClimateClaw='{"host":"https://nextgems.dkrz.de"}'
     ```
-    **Note** : You can change the final parameter to point to any valid host where an instance of FrevaGPT is available. The first two arguments ensure that only FrevaGPT is available as a chat provider (second argument is related to [this](https://github.com/jupyterlab/jupyter-ai/issues/913) issue).
+    **Note** : You can change the final parameter to point to any valid host where an instance of ClimateClaw is available. The first two arguments ensure that only ClimateClaw is available as a chat provider (second argument is related to [this](https://github.com/jupyterlab/jupyter-ai/issues/913) issue).
 4. To remove the development install:
     ```
     jlpm dev-uninstall
     jlpm clean
     ```
 
-### Installation of official version of Jupyter-AI (does not include FrevaGPT and changes made to base version in this fork)
+### Installation of official version of Jupyter-AI (does not include ClimateClaw and changes made to base version in this fork)
 
 Below is a simplified overview of the installation and usage process.
 See [our official documentation](https://jupyter-ai.readthedocs.io/en/latest/users/index.html)

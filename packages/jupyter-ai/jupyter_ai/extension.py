@@ -32,9 +32,9 @@ JUPYTERNAUT_AVATAR_ROUTE = JupyternautPersona.avatar_route
 JUPYTERNAUT_AVATAR_PATH = str(
     os.path.join(os.path.dirname(__file__), "static", "jupyternaut.svg")
 )
-FREVAGPT_AVATAR_ROUTE = "api/ai/static/freva_avatar.svg"
-FREVAGPT_AVATAR_PATH = str(
-    os.path.join(os.path.dirname(__file__), "static", "freva_avatar.svg")
+CLIMATECLAW_AVATAR_ROUTE = "api/ai/static/climateclaw_avatar.svg"
+CLIMATECLAW_AVATAR_PATH = str(
+    os.path.join(os.path.dirname(__file__), "static", "climateclaw_avatar.svg")
 )
 
 DEFAULT_HELP_MESSAGE_TEMPLATE = """Hi there! I'm {persona_name}, your {assistant_function}.
@@ -69,17 +69,17 @@ class AiExtension(ExtensionApp):
             StaticFileHandler,
             {"path": JUPYTERNAUT_AVATAR_PATH},
         ),
-        # do the same for the freva-gpt avatar.
+        # do the same for the climateclaw avatar.
         (
-            rf"{FREVAGPT_AVATAR_ROUTE}()",
+            rf"{CLIMATECLAW_AVATAR_ROUTE}()",
             StaticFileHandler,
-            {"path": FREVAGPT_AVATAR_PATH},
+            {"path": CLIMATECLAW_AVATAR_PATH},
         ),
     ]
 
     allowed_providers = List(
         Unicode(),
-        default_value=["FrevaGPT"],
+        default_value=["ClimateClaw"],
         help="Identifiers of allowlisted providers. If `None`, all are allowed.",
         allow_none=True,
         config=True,
@@ -142,7 +142,7 @@ class AiExtension(ExtensionApp):
     )
 
     default_language_model = Unicode(
-        default_value="FrevaGPT:gpt-4.1",
+        default_value="ClimateClaw:gpt-4.1",
         allow_none=True,
         help="""
         Default language model to use, as string in the format

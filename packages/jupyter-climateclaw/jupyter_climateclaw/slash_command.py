@@ -78,7 +78,7 @@ class LoginSlashCommand(BaseChatHandler):
                     device_code=code["device_code"], interval=code["interval"]
                 )
                 self.freva_token_store.put(host=self.host, token=token)
-                response = "Login successful! You can now use the FrevaGPT provider."
+                response = "Login successful! You can now use the ClimateClaw provider."
 
             except Exception as e:
                 response = "Error encountered during login. Please try again later."

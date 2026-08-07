@@ -7,11 +7,11 @@
     "jupyter",
     "jupyterlab",
     "jupyterlab-extension",
-    "freva-gpt"
+    "climateclaw"
   ],
-  "homepage": "https://github.com/freva-org/freva-jupyter-ai/",
+  "homepage": "https://github.com/freva-org/climateclaw-jupyter-ai/",
   "bugs": {
-    "url": "https://github.com/freva-org/freva-jupyter-ai/issues",
+    "url": "https://github.com/freva-org/climateclaw-jupyter-ai/issues",
     "email": "freva@dkrz.de"
   },
   "license": "BSD-3-Clause",

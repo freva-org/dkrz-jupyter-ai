@@ -3,7 +3,7 @@ requires = ["hatchling>=1.4.0", "jupyterlab~=4.0"]
 build-backend = "hatchling.build"
 
 [project]
-name = "jupyter_freva_gpt"
+name = "jupyter_climateclaw"
 readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.8"
@@ -21,24 +21,24 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
 ]
 version = "0.5.0"
-description = "A Jupyter AI extension for FrevaGPT."
+description = "A Jupyter AI extension for ClimateClaw."
 authors = [
     { name = "Felix Oertel", email = "oertel@dkrz.de" },
 ]
-dependencies = ["py-oidc-auth-client==2603.0.1", "aiofiles"]
+dependencies = ["py-oidc-auth-client==2603.0.1", "aiofiles", "nest_asyncio"]
 
 [project.optional-dependencies]
 test = ["coverage", "pytest", "pytest-asyncio", "pytest-cov"]
 
 [project.entry-points."jupyter_ai.model_providers"]
-frevagpt-provider = "jupyter_freva_gpt.provider:FrevaGPTProvider"
+climateclaw-provider = "jupyter_climateclaw.provider:ClimateClawProvider"
 
 [project.entry-points."jupyter_ai.chat_handlers"]
-docs-slash-command = "jupyter_freva_gpt.slash_command:DocsSlashCommand"
-login-slash-command = "jupyter_freva_gpt.slash_command:LoginSlashCommand"
+docs-slash-command = "jupyter_climateclaw.slash_command:DocsSlashCommand"
+login-slash-command = "jupyter_climateclaw.slash_command:LoginSlashCommand"
 
 [tool.hatch.build.hooks.version]
-path = "jupyter_freva_gpt/_version.py"
+path = "jupyter_climateclaw/_version.py"
 
 [tool.check-wheel-contents]
 ignore = ["W002"]

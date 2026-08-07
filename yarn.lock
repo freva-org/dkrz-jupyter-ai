@@ -2228,6 +2228,12 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@jupyter-ai/climateclaw@workspace:packages/jupyter-climateclaw":
+  version: 0.0.0-use.local
+  resolution: "@jupyter-ai/climateclaw@workspace:packages/jupyter-climateclaw"
+  languageName: unknown
+  linkType: soft
+
 "@jupyter-ai/core@workspace:packages/jupyter-ai":
   version: 0.0.0-use.local
   resolution: "@jupyter-ai/core@workspace:packages/jupyter-ai"
@@ -2278,12 +2284,6 @@ __metadata:
     ts-jest: ^29
     typescript: ~4.9.0
     y-protocols: ^1.0.5
-  languageName: unknown
-  linkType: soft
-
-"@jupyter-ai/freva-gpt@workspace:packages/jupyter-freva-gpt":
-  version: 0.0.0-use.local
-  resolution: "@jupyter-ai/freva-gpt@workspace:packages/jupyter-freva-gpt"
   languageName: unknown
   linkType: soft
 

@@ -481,7 +481,7 @@ class BaseChatHandler:
             ]
         )
         assistant_function=("assistant for climate analysis tasks"
-                            if self.persona.name == "FrevaGPT"
+                            if self.persona.name == "ClimateClaw"
                             else "coding assistant"
                             )
         help_message_body = self.help_message_template.format(
