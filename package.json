@@ -1,7 +1,7 @@
 {
   "name": "@jupyter-ai/monorepo",
-  "version": "2.31.6",
-  "description": "A generative AI extension for JupyterLab (FrevaGPT fork)",
+  "version": "2.31.7",
+  "description": "A generative AI extension for JupyterLab (ClimateClaw fork)",
   "private": true,
   "keywords": [
     "jupyter",
