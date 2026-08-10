@@ -20,12 +20,12 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
 ]
-version = "0.5.0"
+version = "0.6.0"
 description = "A Jupyter AI extension for ClimateClaw."
 authors = [
     { name = "Felix Oertel", email = "oertel@dkrz.de" },
 ]
-dependencies = ["py-oidc-auth-client==2603.0.1", "aiofiles", "nest_asyncio"]
+dependencies = ["climateclaw_client", "py-oidc-auth-client==2603.0.1", "aiofiles", "nest_asyncio"]
 
 [project.optional-dependencies]
 test = ["coverage", "pytest", "pytest-asyncio", "pytest-cov"]
