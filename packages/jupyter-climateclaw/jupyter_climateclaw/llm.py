@@ -23,7 +23,7 @@ from ._types import BasePrompt, Message
 nest_asyncio.apply()
 
 default_user = os.environ["USER"] if "USER" in os.environ.keys() else "test-user"
-default_host = "https://nextgems.dkrz.de"
+default_host = "https://eve.dkrz.de"
 
 class ClimateClaw(BaseChatModel):
 
@@ -99,37 +99,25 @@ class ClimateClaw(BaseChatModel):
         )._format_messages_for_chat()
         # remove any image strings from the prompt to reduce number of tokens drastically
         prompt = re.sub(r"\(data:image/png.*", "('an image was successfully generated')", prompt)
-        self.logger.debug(f"Calling _stream with prompt: {prompt}")
+        self.logger.debug(f"Calling _astream with prompt: {prompt}")
 
-        if self.debug:
-            class AsyncList(list):
-                async def __aiter__(self):
-                    for item in self:
-                        time.sleep(0.01)
-                        yield item
-
-            async with aiofiles.open(
-                file=f"{Path(__file__).parent}/example_conversation.json"
-            ) as fo:
-                stream = AsyncList(json.loads(await fo.read()))
-        else:
-            thread_id = self.client.thread_id
-            if not thread_id: 
-                thread_id = await self.client.newthread()
-            params = {
-                "input": prompt,
-                "model": self.model_id,
-                "thread_id": thread_id,
-                "store_thread": False,
-            }
-            self.logger.debug(
-                "Sending request to /streamresponse with following params: " \
-                    + ", ".join(f"{key}={value}" for key,value in params.items())
-            )
-            stream = await self.client.prompt(
-                stream = True,
-                **params
-            )
+        thread_id = self.client.thread_id
+        if not thread_id: 
+            thread_id = await self.client.newthread()
+        params = {
+            "input": prompt,
+            "model": self.model_id,
+            "thread_id": thread_id,
+            "store_thread": False,
+        }
+        self.logger.debug(
+            "Sending request to /streamresponse with following params: " \
+                + ", ".join(f"{key}={value}" for key,value in params.items())
+        )
+        stream = await self.client.prompt(
+            stream = True,
+            **params
+        )
         async for variant, content in stream.aiter_for_markdown():
             message = Message(variant=variant, content = content)
             yield self._translate_to_chat_generation_chunk(message)
