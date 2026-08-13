@@ -9,35 +9,8 @@ from traitlets.config import Application
 
 from climateclaw_client import AsyncClimateClaw
 
-fallback_host = "https://nextgems.dkrz.de/"
+fallback_host = "https://eve.dkrz.de/"
 logger = Application.instance().log
-
-
-class DocsSlashCommand(BaseChatHandler):
-    """
-    A slash command implementation that prints out some documentation on the backend.
-    """
-
-    id = "docs"
-    name = "Docs"
-    help = "A command that prints out some documentation on the backend"
-    routing_type = SlashCommandRoutingType(slash_id="docs")
-    uses_llm = False
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        lm_provider_params = self.config_manager.lm_provider_params
-        host = fallback_host
-        if lm_provider_params:
-            host = self.config_manager.lm_provider_params.get("host", fallback_host)
-        api_url = f"{host}"
-        self.client: AsyncClimateClaw = AsyncClimateClaw(base_url=api_url, timeout=5)
-
-    async def process_message(self, message: HumanChatMessage):
-        self.reply(
-            response=await self.client.request(method="GET", url="/docs"), human_msg=message
-        )
-
 
 class LoginSlashCommand(BaseChatHandler):
     """
