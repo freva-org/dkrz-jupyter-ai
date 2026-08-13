@@ -34,7 +34,6 @@ class ClimateClaw(BaseChatModel):
     thread_id: str = Field(default=None)
     logger: logging.Logger = Application.instance().log
     disable_auth: ClassVar[bool] = False
-    debug: bool = False
 
     @computed_field
     @cached_property
