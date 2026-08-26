@@ -25,7 +25,7 @@ description = "A Jupyter AI extension for ClimateClaw."
 authors = [
     { name = "Felix Oertel", email = "oertel@dkrz.de" },
 ]
-dependencies = ["climateclaw_client>=0.2.1", "py-oidc-auth-client==2603.0.1", "aiofiles", "nest_asyncio"]
+dependencies = ["climateclaw_client>=0.2.2", "py-oidc-auth-client==2603.0.1", "aiofiles", "nest_asyncio"]
 
 [project.optional-dependencies]
 test = ["coverage", "pytest", "pytest-asyncio", "pytest-cov"]
