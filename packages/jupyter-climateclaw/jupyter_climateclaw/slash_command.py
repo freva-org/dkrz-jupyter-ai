@@ -7,8 +7,6 @@ from langchain_core.utils import get_from_env
 from py_oidc_auth_client import DeviceFlow, TokenStore, Token
 from traitlets.config import Application
 
-from climateclaw_client import AsyncClimateClaw
-
 fallback_host = "https://eve.dkrz.de/"
 logger = Application.instance().log
 
