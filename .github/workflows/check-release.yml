@@ -20,6 +20,10 @@ jobs:
         with:
           python_version: "3.11.x"
 
+      - name: Install jupyterlab dependencies
+        run: |
+          pip install jupyterlab
+
       - name: Check Release
         uses: jupyter-server/jupyter_releaser/.github/actions/check-release@v2
         with:
