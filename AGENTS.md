@@ -20,6 +20,6 @@ Upstream branch for synchronization: 2.x
 The most important components are located under packages/:
 1. packages/jupyter-ai: core jupyter-ai package, including ui components
 2. packages/jupyter-ai-magics: jupyter-ai backend components, including jupyter-ai inline magic methods
-3. packages/climateclaw-provider: custom provider for ClimateClaw chatbot for jupyter-ai
+3. packages/jupyter-climateclaw: custom provider for ClimateClaw chatbot for jupyter-ai
 
 
