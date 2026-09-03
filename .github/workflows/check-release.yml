@@ -23,7 +23,9 @@ jobs:
       - name: Install jupyterlab dependencies and initialise jlpm
         run: |
           pip install jupyterlab
+          jlpm
           jlpm install
+          jlpm build
 
       - name: Check Release
         uses: jupyter-server/jupyter_releaser/.github/actions/check-release@v2
