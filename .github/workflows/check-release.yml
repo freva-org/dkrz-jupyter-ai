@@ -20,9 +20,10 @@ jobs:
         with:
           python_version: "3.11.x"
 
-      - name: Install jupyterlab dependencies
+      - name: Install jupyterlab dependencies and initialise jlpm
         run: |
           pip install jupyterlab
+          jlpm install
 
       - name: Check Release
         uses: jupyter-server/jupyter_releaser/.github/actions/check-release@v2
