@@ -1,21 +1,23 @@
 {
   "name": "@jupyter-ai/core",
-  "version": "2.31.6",
-  "description": "A generative AI extension for JupyterLab",
+  "version": "0.1.0",
+  "description": "A generative AI extension for JupyterLab (ClimateClaw Fork)",
+  "private": true,
   "keywords": [
     "jupyter",
     "jupyterlab",
-    "jupyterlab-extension"
+    "jupyterlab-extension",
+    "climateclaw"
   ],
-  "homepage": "https://github.com/jupyterlab/jupyter-ai",
+  "homepage": "https://github.com/freva-org/dkrz-jupyter-ai",
   "bugs": {
-    "url": "https://github.com/jupyterlab/jupyter-ai/issues",
-    "email": "jupyter@googlegroups.com"
+    "url": "https://github.com/freva-org/dkrz-jupyter-ai/issues",
+    "email": "freva@dkrz.de"
   },
   "license": "BSD-3-Clause",
   "author": {
-    "name": "Project Jupyter",
-    "email": "jupyter@googlegroups.com"
+    "name": "Freva",
+    "email": "freva@dkrz.de"
   },
   "files": [
     "lib/**/*.{d.ts,eot,gif,html,jpg,js,js.map,json,png,svg,woff2,ttf}",
@@ -27,7 +29,7 @@
   "style": "style/index.css",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jupyterlab/jupyter-ai.git"
+    "url": "https://github.com/freva-org/dkrz-jupyter-ai.git"
   },
   "scripts": {
     "build": "jlpm build:lib && jlpm build:labextension:dev",
@@ -54,8 +56,8 @@
     "watch": "run-p watch:src watch:labextension",
     "watch:src": "tsc -w",
     "watch:labextension": "jupyter labextension watch .",
-    "dev-install": "pip install -e \".[dev,all,test]\" && jupyter labextension develop . --overwrite && jupyter server extension enable jupyter_ai",
-    "dev-uninstall": "pip uninstall jupyter_ai -y",
+    "dev-install": "pip install -e \".[dev,all,test]\" && jupyter labextension develop . --overwrite &&  python -c \"from jupyter_server.extension.serverextension import toggle_server_extension_python; toggle_server_extension_python('jupyter_ai', enabled=True)\"",
+    "dev-uninstall": "pip uninstall dkrz_jupyter_ai -y",
     "install-from-src": "pip install ."
   },
   "dependencies": {

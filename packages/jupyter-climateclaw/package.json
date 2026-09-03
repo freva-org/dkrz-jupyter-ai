@@ -1,0 +1,25 @@
+{
+  "name": "@jupyter-ai/climateclaw",
+  "version": "0.1.0",
+  "description": "ClimateClaw package for Jupyter AI Python. Not published on NPM.",
+  "private": true,
+  "homepage": "https://github.com/freva-org/dkrz-jupyter-ai",
+  "bugs": {
+    "url": "https://github.com/freva-org/dkrz-jupyter-ai/issues",
+    "email": "freva@dkrz.de"
+  },
+  "license": "BSD-3-Clause",
+  "author": {
+    "name": "Freva",
+    "email": "freva@dkrz.de"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/freva-org/dkrz-jupyter-ai.git"
+  },
+  "scripts": {
+    "dev-install": "pip install -e \".\"",
+    "dev-uninstall": "pip uninstall jupyter_climateclaw -y",
+    "install-from-src": "pip install ."
+  }
+}
