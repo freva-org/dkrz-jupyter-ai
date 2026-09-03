@@ -1,6 +1,6 @@
 {
   "name": "@jupyter-ai/test",
-  "version": "2.31.8",
+  "version": "0.1.0",
   "description": "Jupyter AI test package. Not published on NPM or PyPI.",
   "private": true,
   "homepage": "https://github.com/freva-org/freva-jupyter-ai",

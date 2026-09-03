@@ -64,7 +64,7 @@ For more specific instructions for each model provider, refer to [the model prov
 
 ## Installation
 
-### Building ClimateClaw-Jupyter-AI for local testing:
+### Building dkrz-jupyter-ai for local testing:
 1. Create build env using conda:
     ```
     conda create -n jupyter-ai -c conda-forge python=3.12 nodejs=20

@@ -1,6 +1,6 @@
 {
   "name": "@jupyter-ai/monorepo",
-  "version": "2.31.8",
+  "version": "0.1.0",
   "description": "A generative AI extension for JupyterLab (ClimateClaw fork)",
   "private": true,
   "keywords": [
@@ -9,9 +9,9 @@
     "jupyterlab-extension",
     "climateclaw"
   ],
-  "homepage": "https://github.com/freva-org/climateclaw-jupyter-ai/",
+  "homepage": "https://github.com/freva-org/dkrz-jupyter-ai/",
   "bugs": {
-    "url": "https://github.com/freva-org/climateclaw-jupyter-ai/issues",
+    "url": "https://github.com/freva-org/dkrz-jupyter-ai/issues",
     "email": "freva@dkrz.de"
   },
   "license": "BSD-3-Clause",

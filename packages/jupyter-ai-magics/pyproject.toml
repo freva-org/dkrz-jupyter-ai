@@ -3,7 +3,7 @@ requires = ["hatchling>=1.4.0", "hatch-nodejs-version"]
 build-backend = "hatchling.build"
 
 [project]
-name = "jupyter_ai_magics"
+name = "dkrz_jupyter_ai_magics"
 readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.9"
@@ -107,6 +107,9 @@ source = "nodejs"
 
 [tool.hatch.metadata.hooks.nodejs]
 fields = ["description", "authors", "urls"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["jupyter_ai_magics"]
 
 [tool.hatch.build.hooks.version]
 path = "jupyter_ai_magics/_version.py"
