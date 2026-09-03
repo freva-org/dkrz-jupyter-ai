@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling>=1.4.0", "jupyterlab~=4.0"]
+requires = ["hatchling>=1.4.0", "hatch-nodejs-version"]
 build-backend = "hatchling.build"
 
 [project]
@@ -20,21 +20,30 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
 ]
-version = "0.6.0"
+dynamic = ["version"]
 description = "A Jupyter AI extension for ClimateClaw."
 authors = [
     { name = "Felix Oertel", email = "oertel@dkrz.de" },
 ]
-dependencies = ["climateclaw_client>=0.2.2", "py-oidc-auth-client==2603.0.1", "aiofiles", "nest_asyncio"]
+dependencies = [
+    "dkrz_jupyter_ai>=0.1.0,<1.0.0",
+    "climateclaw_client>=0.2.2",
+    "py-oidc-auth-client==2603.0.1",
+    "aiofiles",
+    "nest_asyncio",
+]
 
 [project.optional-dependencies]
 test = ["coverage", "pytest", "pytest-asyncio", "pytest-cov"]
 
 [project.entry-points."jupyter_ai.model_providers"]
-climateclaw-provider = "jupyter_climateclaw.provider:ClimateClawProvider"
+jupyter-climateclaw = "jupyter_climateclaw.provider:ClimateClawProvider"
 
 [project.entry-points."jupyter_ai.chat_handlers"]
 login-slash-command = "jupyter_climateclaw.slash_command:LoginSlashCommand"
+
+[tool.hatch.version]
+source = "nodejs"
 
 [tool.hatch.build.hooks.version]
 path = "jupyter_climateclaw/_version.py"
