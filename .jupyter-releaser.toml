@@ -7,7 +7,7 @@ skip = [
 [hooks]
 before-build-python = [
     "jlpm install",
-    "jlpm clean:all"
+    "jlpm clean:all",
     "jlpm build:prod",
 ]
 before-bump-version = ["python -m pip install tomlkit"]
