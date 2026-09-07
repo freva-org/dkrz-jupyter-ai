@@ -23,8 +23,6 @@ jobs:
       - name: Install JupyterLab
         run: pip install "jupyterlab~=4.0"
           
-
-
       - name: Check Release
         uses: jupyter-server/jupyter_releaser/.github/actions/check-release@v2
         with:
