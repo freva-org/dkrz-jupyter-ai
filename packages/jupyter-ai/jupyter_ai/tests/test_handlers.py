@@ -19,7 +19,7 @@ from jupyter_ai.models import (
     Persona,
 )
 from jupyter_ai_magics import BaseProvider
-from langchain_community.llms import FakeListLLM
+from langchain_community.llms.fake import FakeListLLM
 from tornado.httputil import HTTPServerRequest
 from tornado.web import Application
 

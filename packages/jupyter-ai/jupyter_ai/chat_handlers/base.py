@@ -265,6 +265,11 @@ class BaseChatHandler:
             response = f"Oops! There's a problem connecting to {provider_name}. Please update your {provider_name} API key in the chat settings."
             self.reply(response, message)
             return
+        if lm_provider and lm_provider.is_not_auth_exc(e):
+            provider_name = getattr(self.config_manager.lm_provider, "name", "")
+            response = f"You are noth authenticated to use the {provider_name}. Please login via the `/login` slash command in the chat interface."
+            self.reply(response, message)
+            return
         formatted_e = traceback.format_exc()
         response = (
             f"Sorry, an error occurred. Details below:\n\n```\n{formatted_e}\n```"
@@ -399,7 +404,10 @@ class BaseChatHandler:
 
     def get_model_parameters(
         self, provider: type[BaseProvider], provider_params: dict[str, str]
-    ):
+    ):  
+        if f"{provider.id}" in self.model_parameters.keys():
+            self.model_parameters[f"{provider.id}:{provider_params['model_id']}"] = self.model_parameters[f"{provider.id}"]
+
         return self.model_parameters.get(
             f"{provider.id}:{provider_params['model_id']}", {}
         )
@@ -442,7 +450,7 @@ class BaseChatHandler:
     def reset_llm(self) -> None:
         """Resets the llm if it has the option to"""
         lm_provider = self.config_manager.lm_provider
-        if hasattr(lm_provider, "_reset") and self.llm:
+        if self.llm and hasattr(self.llm, "_reset"):
             self.log.info(f"Trying to reset provider: {lm_provider.name}")
             self.llm._reset()
             self.log.info("Successfully reset provider.")
@@ -473,7 +481,7 @@ class BaseChatHandler:
             ]
         )
         assistant_function=("assistant for climate analysis tasks"
-                            if self.persona.name == "FrevaGPT"
+                            if self.persona.name == "ClimateClaw"
                             else "coding assistant"
                             )
         help_message_body = self.help_message_template.format(

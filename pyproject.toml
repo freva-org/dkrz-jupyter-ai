@@ -3,12 +3,13 @@ requires = ["hatchling>=1.4.0", "jupyterlab~=4.0", "hatch-nodejs-version"]
 build-backend = "hatchling.build"
 
 [project]
-name = "jupyter_ai_monorepo"
+name = "dkrz_jupyter_ai_monorepo"
 dynamic = ["version", "description", "authors", "urls", "keywords"]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
-  "jupyter-ai-magics @ {root:uri}/packages/jupyter-ai-magics",
-  "jupyter-ai @ {root:uri}/packages/jupyter-ai",
+  "dkrz-jupyter-ai-magics @ {root:uri}/packages/jupyter-ai-magics",
+  "dkrz-jupyter-ai @ {root:uri}/packages/jupyter-ai",
+  "jupyter-climateclaw @ {root:uri}/packages/jupyter-climateclaw",
 ]
 
 [project.optional-dependencies]
@@ -26,7 +27,7 @@ source = "nodejs"
 path = "package.json"
 
 [tool.hatch.build]
-packages = ["packages/jupyter-ai-magics", "packages/jupyter-ai"]
+packages = ["packages/jupyter-ai-magics", "packages/jupyter-ai", "packages/jupyter-climateclaw"]
 
 [tool.hatch.metadata]
 allow-direct-references = true
