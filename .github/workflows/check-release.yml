@@ -20,10 +20,8 @@ jobs:
         with:
           python_version: "3.11.x"
 
-      - name: Install JupyterLab and JavaScript dependencies
-        run: |
-          pip install "jupyterlab~=4.0"
-          jlpm install
+      - name: Install JupyterLab
+        run: pip install "jupyterlab~=4.0"
           
 
 
