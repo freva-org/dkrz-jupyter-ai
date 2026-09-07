@@ -7,9 +7,9 @@ name = "dkrz_jupyter_ai_monorepo"
 dynamic = ["version", "description", "authors", "urls", "keywords"]
 requires-python = ">=3.10"
 dependencies = [
-  "dkrz-jupyter-ai-magics @ {root:uri}/packages/jupyter-ai-magics",
-  "dkrz-jupyter-ai @ {root:uri}/packages/jupyter-ai",
-  "jupyter-climateclaw @ {root:uri}/packages/jupyter-climateclaw",
+  "dkrz-jupyter-ai-magics @ file://${PROJECT_ROOT}/packages/jupyter-ai-magics",
+  "dkrz-jupyter-ai @ file://${PROJECT_ROOT}/packages/jupyter-ai",
+  "jupyter-climateclaw @ file://${PROJECT_ROOT}/packages/jupyter-climateclaw",
 ]
 
 [project.optional-dependencies]
