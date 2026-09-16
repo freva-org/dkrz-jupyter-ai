@@ -6,7 +6,7 @@ skip = [
 
 [hooks]
 before-build-python = [
-    "python -m pip install jupyterlab~=4.0"
+    "python -m pip install jupyterlab~=4.0",
     "jlpm install",
     "jlpm clean:all",
     "jlpm build:prod",
