@@ -1,6 +1,6 @@
 {
   "name": "@jupyter-ai/climateclaw",
-  "version": "0.2.0",
+  "version": "0.1.0",
   "description": "ClimateClaw package for Jupyter AI Python. Not published on NPM.",
   "private": true,
   "homepage": "https://github.com/freva-org/dkrz-jupyter-ai",
