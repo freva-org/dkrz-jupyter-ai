@@ -26,7 +26,7 @@ authors = [
 dependencies = [
     "dkrz_jupyter_ai>=0.1.0,<1.0.0",
     "climateclaw_client>=0.2.2",
-    "py-oidc-auth-client==2603.0.1",
+    "py-oidc-auth-client>=2603.0.1",
     "aiofiles",
     "nest_asyncio",
 ]
