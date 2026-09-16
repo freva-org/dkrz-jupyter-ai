@@ -2,6 +2,12 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.2.0
+
+No merged PRs
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 2.31.7
 
 The Dask dashboard (showing progress of `/learn` calls) is now disabled by default, as it is only intended for local development. Pass the `--AiExtension.enable_dask_dashboard=True` trait to enable the Dask dashboard on port `8787`.
@@ -17,8 +23,6 @@ The Dask dashboard (showing progress of `/learn` calls) is now disabled by defau
 ([GitHub contributors page for this release](https://github.com/jupyterlab/jupyter-ai/graphs/contributors?from=2025-07-25&to=2025-11-25&type=c))
 
 [@3coins](https://github.com/search?q=repo%3Ajupyterlab%2Fjupyter-ai+involves%3A3coins+updated%3A2025-07-25..2025-11-25&type=Issues) | [@brichet](https://github.com/search?q=repo%3Ajupyterlab%2Fjupyter-ai+involves%3Abrichet+updated%3A2025-07-25..2025-11-25&type=Issues) | [@cszhbo](https://github.com/search?q=repo%3Ajupyterlab%2Fjupyter-ai+involves%3Acszhbo+updated%3A2025-07-25..2025-11-25&type=Issues) | [@dlqqq](https://github.com/search?q=repo%3Ajupyterlab%2Fjupyter-ai+involves%3Adlqqq+updated%3A2025-07-25..2025-11-25&type=Issues) | [@ellisonbg](https://github.com/search?q=repo%3Ajupyterlab%2Fjupyter-ai+involves%3Aellisonbg+updated%3A2025-07-25..2025-11-25&type=Issues) | [@felix5572](https://github.com/search?q=repo%3Ajupyterlab%2Fjupyter-ai+involves%3Afelix5572+updated%3A2025-07-25..2025-11-25&type=Issues) | [@krassowski](https://github.com/search?q=repo%3Ajupyterlab%2Fjupyter-ai+involves%3Akrassowski+updated%3A2025-07-25..2025-11-25&type=Issues) | [@srdas](https://github.com/search?q=repo%3Ajupyterlab%2Fjupyter-ai+involves%3Asrdas+updated%3A2025-07-25..2025-11-25&type=Issues)
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 2.31.6
 
