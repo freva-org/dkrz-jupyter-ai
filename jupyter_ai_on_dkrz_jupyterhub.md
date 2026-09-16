@@ -6,7 +6,7 @@ ssh <username>@levante.dkrz.de
 ```
 2. Once logged in, run the following command to set up the Jupyter-AI extension, plus extras:
 ```bash
-module load clint climateclaw/2026.08
+module load clint climateclaw
 ```
 This command downloads and installs the dependencies needed for Jupyter-AI and ClimateClaw, creates a IPython Kernel for use of the chatbot within a notebook and creates an example notebook in `~/freva-jupyter-ai-examples`.
 
