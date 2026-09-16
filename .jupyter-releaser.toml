@@ -14,7 +14,7 @@ before-build-python = [
 before-bump-version = ["python -m pip install tomlkit"]
 
 [options]
-version-cmd = "python ../../scripts/bump-version.py --skip-if-dirty"
+version-cmd = "python \"$(git rev-parse --show-toplevel)/scripts/bump-version.py\" --skip-if-dirty"
 python_packages = [
     "packages/jupyter-ai:dkrz-jupyter-ai",
     "packages/jupyter-ai-magics:dkrz-jupyter-ai-magics",
