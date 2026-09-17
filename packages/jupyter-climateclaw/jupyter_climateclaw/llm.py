@@ -1,14 +1,10 @@
 import asyncio
 from functools import cached_property
-import json
 import logging
 import os
 import re
-import time
-from pathlib import Path
 from typing import Any, AsyncIterator, ClassVar, Optional
 
-import aiofiles
 import nest_asyncio
 from langchain_core.callbacks.manager import CallbackManagerForLLMRun
 from langchain_core.language_models.chat_models import BaseChatModel, agenerate_from_stream
@@ -23,7 +19,7 @@ from ._types import BasePrompt, Message
 nest_asyncio.apply()
 
 default_user = os.environ["USER"] if "USER" in os.environ.keys() else "test-user"
-default_host = "https://eve.dkrz.de"
+default_host = "https://nextgems.dkrz.de"
 
 class ClimateClaw(BaseChatModel):
 

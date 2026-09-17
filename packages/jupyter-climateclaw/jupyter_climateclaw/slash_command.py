@@ -7,7 +7,7 @@ from langchain_core.utils import get_from_env
 from py_oidc_auth_client import DeviceFlow, TokenStore, Token
 from traitlets.config import Application
 
-fallback_host = "https://eve.dkrz.de/"
+fallback_host = "https://nextgems.dkrz.de/"
 logger = Application.instance().log
 
 class LoginSlashCommand(BaseChatHandler):
