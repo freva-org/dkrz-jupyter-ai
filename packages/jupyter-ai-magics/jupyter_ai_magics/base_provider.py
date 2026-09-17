@@ -453,9 +453,6 @@ class BaseProvider(BaseModel):
     @property
     def supports_streaming(self):
         return self._supports_sync_streaming or self._supports_async_streaming
-    
-    def _reset(self):
-        return 
 
     async def generate_inline_completions(
         self, request: InlineCompletionRequest
