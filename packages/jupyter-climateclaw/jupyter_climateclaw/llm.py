@@ -27,7 +27,6 @@ class ClimateClaw(BaseChatModel):
     host: str = Field(default=default_host)
     user_id: str = Field(default=default_user)
     stop: str = Field(default="Generation complete")
-    thread_id: str = Field(default=None)
     logger: logging.Logger = Application.instance().log
     disable_auth: ClassVar[bool] = False
 
@@ -36,9 +35,13 @@ class ClimateClaw(BaseChatModel):
     def client(self) -> AsyncClimateClaw:
         return AsyncClimateClaw(
             base_url=self.host,
-            thread_id=self.thread_id,
             interactive_auth=False,
         )
+    
+    @computed_field
+    @property
+    def thread_id(self) -> str:
+        return self.client.thread_id
 
     @property
     def _llm_type(self) -> str:
@@ -96,13 +99,9 @@ class ClimateClaw(BaseChatModel):
         prompt = re.sub(r"\(data:image/png.*", "('an image was successfully generated')", prompt)
         self.logger.debug(f"Calling _astream with prompt: {prompt}")
 
-        thread_id = self.client.thread_id
-        if not thread_id: 
-            thread_id = await self.client.newthread()
         params = {
             "input": prompt,
             "model": self.model_id,
-            "thread_id": thread_id,
             "store_thread": False,
         }
         self.logger.debug(
