@@ -1,12 +1,10 @@
-# jupyter_climateclaw
+# jupyter-climateclaw
 
-`jupyter_climateclaw` is a Jupyter AI module, a package
-that registers additional model providers and slash commands for the Jupyter AI
-extension.
-
+`jupyter-climateclaw` is a Jupyter AI module, a package
+that registers a model provider to connect to `ClimateClaw` instances.
 ## Requirements
 
-- Python 3.8 - 3.12
+- Python 3.10 - 3.12
 - JupyterLab 4
 
 ## Install
@@ -14,14 +12,14 @@ extension.
 To install the extension, execute:
 
 ```bash
-pip install jupyter_climateclaw
+pip install jupyter-climateclaw
 
 ## Uninstall
 
 To remove the extension, execute:
 
 ```bash
-pip uninstall jupyter_climateclaw
+pip uninstall jupyter-climateclaw
 ```
 
 ## Contributing
@@ -36,7 +34,7 @@ pip install -e "."
 ### Development uninstall
 
 ```bash
-pip uninstall jupyter_climateclaw
+pip uninstall jupyter-climateclaw
 ```
 
 #### Backend tests
