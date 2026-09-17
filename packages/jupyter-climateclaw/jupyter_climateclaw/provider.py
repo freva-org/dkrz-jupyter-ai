@@ -20,7 +20,7 @@ CLIMATECLAW_AVATAR_ROUTE = "api/ai/static/climateclaw_avatar.svg"
 ClimateClawPersona = Persona(name="ClimateClaw", avatar_route=CLIMATECLAW_AVATAR_ROUTE)
 
 # option to force default model
-force_default = False
+force_default = True
 
 
 class ClimateClawProvider(BaseProvider, ClimateClaw):
