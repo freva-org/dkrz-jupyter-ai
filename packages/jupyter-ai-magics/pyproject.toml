@@ -67,6 +67,7 @@ all = [
     "qianfan",
     "together",
     "langchain-google-vertexai",
+    "jupyter-climateclaw>=0.1.1",
 ]
 
 [project.entry-points."jupyter_ai.model_providers"]
