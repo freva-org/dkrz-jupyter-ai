@@ -1,14 +1,12 @@
-import json
-import os
+import logging
 
 from jupyter_ai.chat_handlers.base import BaseChatHandler, SlashCommandRoutingType
 from jupyter_ai.models import HumanChatMessage
 from langchain_core.utils import get_from_env
 from py_oidc_auth_client import DeviceFlow, TokenStore, Token
-from traitlets.config import Application
 
 fallback_host = "https://nextgems.dkrz.de/"
-logger = Application.instance().log
+logger = logging.getLogger(__name__)
 
 class LoginSlashCommand(BaseChatHandler):
     """
