@@ -16,13 +16,12 @@ Jupyter AI on manual release workflow runs. This script:
     simplicity. By convention, our repo prefers patch releases over
     post-releases and pre-releases over dev releases.
 
-- Bumps `jupyter-ai` and `jupyter-ai-magics` to `spec_version`. If
-`spec_version` is "minor", then this script bumps the minor version of each
-package.
+- Bumps `jupyter-ai`, `jupyter-ai-magics`, and `jupyter-climateclaw` to
+`spec_version`. If `spec_version` is "minor", then this script bumps the minor
+version of each package.
 
-- Updates `jupyter-ai`'s required version of `jupyter-ai-magics` to exactly
-match the specified version. In other words, this script ensures
-`jupyter-ai==x.y.z` always depends on `jupyter-ai-magics==x.y.z` exactly.
+- Updates the constraints between the lockstep Python distributions to start at
+the specified version and remain below the next major version.
 
 - If `--skip-if-dirty` is passed, successive calls do nothing. This is a
 temporary workaround for
@@ -39,6 +38,8 @@ from pkg_resources import parse_version
 
 MONOREPO_ROOT = Path(__file__).parent.parent.resolve()
 LERNA_CMD = "npx -p lerna@6.4.1 -y lerna version --no-push --force-publish --no-git-tag-version -y"
+CORE_DISTRIBUTION = "dkrz_jupyter_ai"
+MAGICS_DISTRIBUTION = "dkrz_jupyter_ai_magics"
 
 
 @click.command()
@@ -79,20 +80,35 @@ def bump_version(ignore_dirty: bool, skip_if_dirty: bool, spec: str):
     lerna_cmd = f"{LERNA_CMD} {next_version_npm}"
     run(lerna_cmd)
 
-    # bump the version of `jupyter-ai-magics` required by `jupyter-ai`
+    next_major_version = f"{next_version.major + 1}.0.0"
+
+    # Bump the version of Magics required by the core package.
     jai_pyproject_path = MONOREPO_ROOT / "packages" / "jupyter-ai" / "pyproject.toml"
     jai_pyproject = tomlkit.parse(jai_pyproject_path.read_text())
     jai_deps = jai_pyproject.get("project").get("dependencies")
     for i, dep in enumerate(jai_deps):
-        if str(dep).startswith("jupyter_ai_magics"):
-            next_major_version = f"{next_version.major + 1}.0.0"
+        if str(dep).startswith(MAGICS_DISTRIBUTION):
             jai_deps[i] = (
-                f"jupyter_ai_magics>={str(next_version)},<{next_major_version}"
+                f"{MAGICS_DISTRIBUTION}>={str(next_version)},<{next_major_version}"
             )
             break
 
-    # write updated pyproject.toml file
     jai_pyproject_path.write_text(tomlkit.dumps(jai_pyproject))
+
+    # Bump the version of the core package required by ClimateClaw.
+    climateclaw_pyproject_path = (
+        MONOREPO_ROOT / "packages" / "jupyter-climateclaw" / "pyproject.toml"
+    )
+    climateclaw_pyproject = tomlkit.parse(climateclaw_pyproject_path.read_text())
+    climateclaw_deps = climateclaw_pyproject.get("project").get("dependencies")
+    for i, dep in enumerate(climateclaw_deps):
+        if str(dep).startswith(CORE_DISTRIBUTION):
+            climateclaw_deps[i] = (
+                f"{CORE_DISTRIBUTION}>={str(next_version)},<{next_major_version}"
+            )
+            break
+
+    climateclaw_pyproject_path.write_text(tomlkit.dumps(climateclaw_pyproject))
 
 
 def compute_next_version(spec: str) -> Version:

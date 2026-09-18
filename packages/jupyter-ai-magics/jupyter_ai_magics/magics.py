@@ -138,7 +138,7 @@ class AiMagics(Magics):
     )
 
     default_language_model = traitlets.Unicode(
-        default_value="FrevaGPT:gpt-4o",
+        default_value="ClimateClaw:gpt-4.1",
         allow_none=True,
         help="""Default language model to use, as string in the format
         <provider-id>:<model-id>, defaults to None.

@@ -62,11 +62,10 @@ class BlockedModelError(Exception):
 
 def _validate_provider_authn(config: GlobalConfig, provider: Type[AnyProvider]):
     # TODO: handle non-env auth strategies
-    if not provider.auth_strategy or provider.auth_strategy.type not in ("env", "freva"):
+    if not provider.auth_strategy or provider.auth_strategy.type != "env":
         return
 
-    if provider.auth_strategy.name not in config.api_keys:
-        print("api_keys", config.api_keys)
+    if hasattr(provider.auth_strategy, "name") and provider.auth_strategy.name not in config.api_keys:
         raise AuthError(
             f"Missing API key for '{provider.auth_strategy.name}' in the config."
         )
@@ -227,8 +226,8 @@ class ConfigManager(Configurable):
             if "embeddings_fields" not in existing_config:
                 existing_config["embeddings_fields"] = {}
             merged_config = always_merger.merge(
-                default_config,
                 {k: v for k, v in existing_config.items() if v is not None},
+                default_config,
             )
             config = GlobalConfig(**merged_config)
             validated_config = self._validate_model_ids(config)
@@ -482,7 +481,7 @@ class ConfigManager(Configurable):
             if (
                 provider
                 and provider.auth_strategy
-                and provider.auth_strategy.type in ("env", "freva")
+                and provider.auth_strategy.type=="env"
             ):
                 required_keys.append(provider.auth_strategy.name)
             elif (
@@ -581,15 +580,16 @@ class ConfigManager(Configurable):
         model_uid = getattr(config, key)
         if not model_uid:
             return None
-        model_id = model_uid.split(":", 1)[1]
+        provider_id, model_id = model_uid.split(":", 1)
+        
 
         # get config fields (e.g. base API URL, etc.)
         if completions:
-            fields = config.completions_fields.get(model_uid, {})
+            fields = config.completions_fields.get(model_uid, {}) or config.completions_fields.get(provider_id, {})
         elif key == "embeddings_provider_id":
-            fields = config.embeddings_fields.get(model_uid, {})
+            fields = config.embeddings_fields.get(model_uid, {}) or config.embeddings_fields.get(provider_id, {})
         else:
-            fields = config.fields.get(model_uid, {})
+            fields = config.fields.get(model_uid, {}) or config.fields.get(provider_id, {})
 
         # exclude empty fields
         # TODO: modify the config manager to never save empty fields in the
@@ -607,14 +607,6 @@ class ConfigManager(Configurable):
         )
         authn_fields = {}
         if Provider.auth_strategy and Provider.auth_strategy.type == "env":
-            keyword_param = (
-                Provider.auth_strategy.keyword_param
-                or Provider.auth_strategy.name.lower()
-            )
-            key_name = Provider.auth_strategy.name
-            authn_fields[keyword_param] = config.api_keys[key_name]
-        
-        elif Provider.auth_strategy and Provider.auth_strategy.type == "freva":
             keyword_param = (
                 Provider.auth_strategy.keyword_param
                 or Provider.auth_strategy.name.lower()

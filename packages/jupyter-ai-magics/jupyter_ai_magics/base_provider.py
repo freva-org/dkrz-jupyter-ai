@@ -121,7 +121,7 @@ class MultiEnvAuthStrategy(BaseModel):
 
     type: Literal["multienv"] = "multienv"
     names: list[str]
-    keyword_params: Optional[list[str]] = None
+    keyword_params: list[str] = []
 
     @model_validator(mode='after')
     def _validate_keyword_params(self) -> Self:
@@ -134,7 +134,6 @@ class MultiEnvAuthStrategy(BaseModel):
 
 class AwsAuthStrategy(BaseModel):
     """Require AWS authentication via Boto3"""
-
     type: Literal["aws"] = "aws"
 
 class FrevaAuthStrategy(BaseModel):
@@ -349,6 +348,13 @@ class BaseProvider(BaseModel):
     def is_api_key_exc(cls, _: Exception):
         """
         Determine if the exception is an API key error. Can be implemented by subclasses.
+        """
+        return False
+    
+    @classmethod
+    def is_not_auth_exc(cls, _: Exception):
+        """
+        Determine if the exception is an authentication error. Can be implemented by subclasses.
         """
         return False
 
