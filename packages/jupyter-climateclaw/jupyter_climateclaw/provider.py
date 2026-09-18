@@ -5,6 +5,7 @@ from jupyter_ai_magics.base_provider import CHAT_SYSTEM_PROMPT, HUMAN_MESSAGE_TE
 from langchain.prompts import (
     ChatPromptTemplate,
     HumanMessagePromptTemplate,
+    MessagesPlaceholder,
     PromptTemplate,
     SystemMessagePromptTemplate,
 )
@@ -43,7 +44,7 @@ class ClimateClawProvider(BaseProvider, ClimateClaw):
     model_id_label: ClassVar[str] = "Model ID"
     """Human-readable label of the model ID."""
 
-    manages_history: ClassVar[bool] = True
+    manages_history: ClassVar[bool] = False
     """Whether this provider manages its own conversation history upstream. """
 
     persona: ClassVar[Persona] = ClimateClawPersona
@@ -92,6 +93,7 @@ class ClimateClawProvider(BaseProvider, ClimateClaw):
                 SystemMessagePromptTemplate.from_template(CHAT_SYSTEM_PROMPT).format(
                     provider_name=name, local_model_id=self.model_id
                 ),
+                MessagesPlaceholder(variable_name="history"),
                 HumanMessagePromptTemplate.from_template(
                     HUMAN_MESSAGE_TEMPLATE,
                     template_format="jinja2",
