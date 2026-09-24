@@ -2228,6 +2228,12 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@jupyter-ai/climateclaw@workspace:packages/jupyter-climateclaw":
+  version: 0.0.0-use.local
+  resolution: "@jupyter-ai/climateclaw@workspace:packages/jupyter-climateclaw"
+  languageName: unknown
+  linkType: soft
+
 "@jupyter-ai/core@workspace:packages/jupyter-ai":
   version: 0.0.0-use.local
   resolution: "@jupyter-ai/core@workspace:packages/jupyter-ai"

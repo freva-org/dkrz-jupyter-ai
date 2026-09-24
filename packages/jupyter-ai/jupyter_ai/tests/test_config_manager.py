@@ -12,8 +12,18 @@ from jupyter_ai.config_manager import (
 )
 from jupyter_ai.models import DescribeConfigResponse, GlobalConfig, UpdateConfigRequest
 from jupyter_ai_magics.utils import get_em_providers, get_lm_providers
+from jupyter_server.serverapp import ServerApp
 from pydantic import ValidationError
 
+logger = logging.getLogger(__name__)
+
+@pytest.fixture(autouse=True)
+def cleanup_jupyter_app():
+    app = ServerApp.instance()
+    logger.info(f"ServerApp instance: {app}")
+    yield
+    logger.info(f"Stopping ServerApp instance: {app}")
+    app.stop()
 
 @pytest.fixture
 def config_path(jp_data_dir):
@@ -79,11 +89,11 @@ def cm_kargs_with_defaults(config_path, schema_path, common_cm_kwargs):
     return {
         **common_cm_kwargs,
         "defaults": {
-            "model_provider_id": "bedrock-chat:anthropic.claude-v1",
+            "model_provider_id": "bedrock-chat:anthropic.claude-v2",
             "embeddings_provider_id": "bedrock:amazon.titan-embed-text-v1",
             "api_keys": {"OPENAI_API_KEY": "open-ai-key-value"},
             "fields": {
-                "bedrock-chat:anthropic.claude-v1": {
+                "bedrock-chat:anthropic.claude-v2": {
                     "credentials_profile_name": "default",
                     "region_name": "us-west-2",
                 }
@@ -293,13 +303,13 @@ def test_init_with_default_values(
     """
     config_response = cm_with_defaults.get_config()
     # assert config response
-    assert config_response.model_provider_id == "bedrock-chat:anthropic.claude-v1"
+    assert config_response.model_provider_id == "bedrock-chat:anthropic.claude-v2"
     assert (
         config_response.embeddings_provider_id == "bedrock:amazon.titan-embed-text-v1"
     )
     assert config_response.api_keys == ["OPENAI_API_KEY"]
     assert config_response.fields == {
-        "bedrock-chat:anthropic.claude-v1": {
+        "bedrock-chat:anthropic.claude-v2": {
             "credentials_profile_name": "default",
             "region_name": "us-west-2",
         }
@@ -318,7 +328,7 @@ def test_init_with_default_values(
 
     assert (
         cm_with_defaults_override.get_config().model_provider_id
-        == "bedrock-chat:anthropic.claude-v1"
+        == "bedrock-chat:anthropic.claude-v2"
     )
 
 
