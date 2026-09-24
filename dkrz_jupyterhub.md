@@ -8,7 +8,7 @@ ssh <username>@levante.dkrz.de
 ```bash
 module load clint climateclaw
 ```
-This command downloads and installs the dependencies needed for Jupyter-AI and ClimateClaw, creates a IPython Kernel for use of the chatbot within a notebook and creates an example notebook in `~/freva-jupyter-ai-examples`.
+This command downloads and installs the dependencies needed for Jupyter-AI and ClimateClaw, creates a IPython Kernel for use of the chatbot within a notebook and creates an example notebook in `~/jupyter-ai-examples`.
 
 #### Using Jupyter-AI on the DKRZ JupyterHub
 1. Open the DKRZ JupyterHub in a web browser: https://jupyterhub.dkrz.de
